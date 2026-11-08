@@ -13,10 +13,10 @@ export default function mount(root, ctx) {
   const sRound = stat('라운드', `0 / ${rounds}`), sLast = stat('이번 기록', '-'), sBest = stat('최고', '-');
   top.append(sRound, sLast, sBest);
   const pad = el('div', 'pad', '탭해서 시작!');
-  pad.style.background = 'var(--p-card)'; pad.style.border = '2px dashed var(--p-line)';
+  pad.style.background = 'var(--p-card)'; pad.style.boxShadow = 'inset 0 0 0 2px var(--p-line)';
   pad.setAttribute('role', 'button'); pad.tabIndex = 0;
   const bottom = el('div', 'row');
-  const again = btn('🔁 다시 하기', 'pb sub', () => reset());
+  const again = btn('다시 하기', 'pb sub', () => reset());
   bottom.appendChild(again);
   f.body.append(top, pad, bottom);
 
@@ -27,23 +27,23 @@ export default function mount(root, ctx) {
   function startRound() {
     state = 'wait'; round++;
     sRound.set(`${round} / ${rounds}`);
-    setPad('#ef4444', '기다려…', '#fff');
+    setPad('var(--color-accent-3)', '기다려…', 'var(--color-ink)');
     const delay = minWait + rng() * 1800;
     if (fake && rng() < 0.35) {
-      timer = setTimeout(() => { setPad('#f59e0b', '아직!', '#fff'); timer = setTimeout(go, 500 + rng() * 900); }, delay * 0.6);
+      timer = setTimeout(() => { setPad('var(--color-sand)', '아직!', 'var(--color-ink)'); timer = setTimeout(go, 500 + rng() * 900); }, delay * 0.6);
     } else timer = setTimeout(go, delay);
   }
-  function go() { state = 'go'; t0 = performance.now(); setPad('#22c55e', '지금! 탭!', '#fff'); sfx.tick(); }
+  function go() { state = 'go'; t0 = performance.now(); setPad('var(--color-mint)', '지금! 탭!', 'var(--color-ink)'); sfx.tick(); }
   function finish() {
     state = 'done';
     const avg = times.reduce((a, b) => a + b, 0) / times.length;
-    setPad('var(--p-ac)', `평균 ${fmtMs(avg)}\n${avg < 250 ? '번개 손!' : avg < 350 ? '아주 빨라요' : avg < 500 ? '좋아요' : '연습하면 빨라져요'}`, '#fff');
+    setPad('var(--p-ac)', `평균 ${fmtMs(avg)}\n${avg < 250 ? '번개 손!' : avg < 350 ? '아주 빨라요' : avg < 500 ? '좋아요' : '연습하면 빨라져요'}`, 'var(--p-ac-ink)');
     pad.style.whiteSpace = 'pre-line';
     f.say(avg < 300 ? f.char.cheer : f.char.lines[2]); sfx.win();
   }
   function tap() {
     if (state === 'idle') { f.say('빨간색이면 기다리고, 초록색이 되면 바로 탭!'); return startRound(); }
-    if (state === 'wait') { clearTimeout(timer); sfx.no(); f.say('너무 빨라! 초록색을 기다려야 해.'); setPad('#64748b', '너무 빨랐어요\n탭해서 다시', '#fff'); pad.style.whiteSpace = 'pre-line'; round--; state = 'retry'; return; }
+    if (state === 'wait') { clearTimeout(timer); sfx.no(); f.say('너무 빨라! 초록색을 기다려야 해.'); setPad('var(--color-muted)', '너무 빨랐어요\n탭해서 다시', 'var(--color-paper)'); pad.style.whiteSpace = 'pre-line'; round--; state = 'retry'; return; }
     if (state === 'retry') return startRound();
     if (state === 'go') {
       const ms = performance.now() - t0; times.push(ms); best = Math.min(best, ms);

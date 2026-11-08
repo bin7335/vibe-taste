@@ -21,7 +21,7 @@ export const APPS = {
 export const THEMES = {
   space: {
     label: '우주', emoji: '🚀', sub: '보라·남색 밤하늘, 별이 반짝', dark: true,
-    bg: 'linear-gradient(160deg,#1e1b4b,#312e81 55%,#0f172a)', ac: '#a78bfa', ac2: '#f0abfc', ink: '#f5f3ff', card: 'rgba(255,255,255,.1)', line: 'rgba(255,255,255,.18)',
+    bg: 'oklch(26% 0.06 282)', ac: 'oklch(87% 0.175 96)', acDeep: 'oklch(72% 0.16 92)', acInk: 'oklch(20% 0.014 255)', ink: 'oklch(96% 0.01 95)', muted: 'oklch(78% 0.03 282)', card: 'oklch(100% 0 0 / 0.1)', line: 'oklch(100% 0 0 / 0.18)',
     glyphs: ['✦', '⭐', '🪐', '☄️', '🌙'],
     palette: ['#a78bfa', '#f0abfc', '#fde68a', '#67e8f9', '#f9a8d4', '#ffffff'],
     words: ['로켓', '행성', '은하수', '우주선', '별자리', '블랙홀', '혜성', '달', '토성', '화성', '우주인', '망원경'],
@@ -36,7 +36,7 @@ export const THEMES = {
   },
   sea: {
     label: '바다', emoji: '🌊', sub: '하늘색·파랑, 물방울이 보글보글', dark: false,
-    bg: 'linear-gradient(160deg,#e0f2fe,#bae6fd 50%,#7dd3fc)', ac: '#0284c7', ac2: '#0ea5e9', ink: '#0c4a6e', card: 'rgba(255,255,255,.75)', line: 'rgba(2,132,199,.18)',
+    bg: 'oklch(92% 0.045 230)', ac: 'oklch(52% 0.15 240)', acDeep: 'oklch(40% 0.13 240)', acInk: 'oklch(98% 0.01 230)', ink: 'oklch(24% 0.05 240)', muted: 'oklch(45% 0.06 240)', card: 'oklch(100% 0 0 / 0.7)', line: 'oklch(40% 0.1 240 / 0.18)',
     glyphs: ['🫧', '🐠', '🐚', '🐙', '🌊'],
     palette: ['#0284c7', '#06b6d4', '#14b8a6', '#fbbf24', '#f472b6', '#ffffff'],
     words: ['고래', '문어', '거북이', '산호', '파도', '조개', '해파리', '등대', '불가사리', '소라', '돌고래', '상어'],
@@ -51,7 +51,7 @@ export const THEMES = {
   },
   forest: {
     label: '숲', emoji: '🌳', sub: '연두·초록, 나뭇잎이 살랑', dark: false,
-    bg: 'linear-gradient(160deg,#ecfccb,#bbf7d0 50%,#86efac)', ac: '#15803d', ac2: '#65a30d', ink: '#14532d', card: 'rgba(255,255,255,.75)', line: 'rgba(21,128,61,.18)',
+    bg: 'oklch(92% 0.06 128)', ac: 'oklch(50% 0.13 150)', acDeep: 'oklch(38% 0.11 150)', acInk: 'oklch(98% 0.01 130)', ink: 'oklch(26% 0.05 150)', muted: 'oklch(45% 0.06 150)', card: 'oklch(100% 0 0 / 0.7)', line: 'oklch(40% 0.1 150 / 0.18)',
     glyphs: ['🍃', '🌿', '🍄', '🐿️', '🌰'],
     palette: ['#15803d', '#65a30d', '#a16207', '#f97316', '#38bdf8', '#ffffff'],
     words: ['나무', '다람쥐', '도토리', '버섯', '나뭇잎', '올빼미', '사슴', '이끼', '솔방울', '개울', '단풍', '딱따구리'],
@@ -66,7 +66,7 @@ export const THEMES = {
   },
   candy: {
     label: '사탕', emoji: '🍭', sub: '분홍·노랑, 반짝이가 톡톡', dark: false,
-    bg: 'linear-gradient(160deg,#fdf2f8,#fbcfe8 50%,#fde68a)', ac: '#db2777', ac2: '#f59e0b', ink: '#831843', card: 'rgba(255,255,255,.8)', line: 'rgba(219,39,119,.18)',
+    bg: 'oklch(93% 0.045 350)', ac: 'oklch(64% 0.2 20)', acDeep: 'oklch(50% 0.18 20)', acInk: 'oklch(98% 0.01 350)', ink: 'oklch(30% 0.09 350)', muted: 'oklch(48% 0.08 350)', card: 'oklch(100% 0 0 / 0.75)', line: 'oklch(45% 0.12 350 / 0.18)',
     glyphs: ['🍬', '🍭', '💖', '✨', '🧁'],
     palette: ['#db2777', '#f59e0b', '#a855f7', '#22d3ee', '#84cc16', '#ffffff'],
     words: ['사탕', '초콜릿', '막대사탕', '젤리', '솜사탕', '도넛', '컵케이크', '마카롱', '캐러멜', '푸딩', '쿠키', '아이스크림'],

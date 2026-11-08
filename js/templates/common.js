@@ -4,32 +4,27 @@ import { el, html } from '../util.js';
 export function frame(root, ctx) {
   const { d, rng } = ctx;
   const t = d.theme;
-  root.style.setProperty('--p-bg', t.bg);
-  root.style.setProperty('--p-ac', t.ac);
-  root.style.setProperty('--p-ac2', t.ac2);
-  root.style.setProperty('--p-ink', t.ink);
-  root.style.setProperty('--p-card', t.card);
-  root.style.setProperty('--p-line', t.line);
+  for (const [k, v] of [['bg', t.bg], ['ac', t.ac], ['ac-deep', t.acDeep], ['ac-ink', t.acInk], ['ink', t.ink], ['muted', t.muted], ['card', t.card], ['line', t.line]]) root.style.setProperty('--p-' + k, v);
   html(root, '');
 
   const fx = el('div', 'fx'); fx.setAttribute('aria-hidden', 'true');
-  const n = 10;
+  // 잘라 붙인 색종이 조각: 테마 팔레트 색으로, 글자·이모지 없이
+  const n = 12;
   for (let i = 0; i < n; i++) {
-    const s = el('span', '', rng.pick(t.glyphs));
+    const s = el('span');
     s.style.left = (i * (100 / n) + rng() * 8) + '%';
-    s.style.animationDuration = (7 + rng() * 8) + 's';
-    s.style.animationDelay = (-rng() * 12) + 's';
-    s.style.fontSize = (14 + rng() * 14) + 'px';
+    s.style.background = rng.pick(t.palette.slice(0, 5));
+    s.style.animationDuration = (9 + rng() * 9) + 's';
+    s.style.animationDelay = (-rng() * 14) + 's';
     fx.appendChild(s);
   }
   root.appendChild(fx);
 
   const app = el('div', 'app');
   const ttl = el('div', 'ttl');
-  const h3 = el('h3', '', `${d.app.emoji} ${d.name}`);
+  const h3 = el('h3', '', d.name);
   ttl.appendChild(h3);
-  ttl.appendChild(el('span', 'chip', `${d.theme.emoji} ${d.theme.label}`));
-  ttl.appendChild(el('span', 'chip', `${d.level.emoji} ${d.level.label}`));
+  ttl.appendChild(el('span', 'chip', `${d.app.label}, ${d.theme.label} 분위기, ${d.level.label}`));
   app.appendChild(ttl);
 
   const hero = el('div', 'hero-char');

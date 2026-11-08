@@ -18,7 +18,7 @@ function openSheet(title, desc) {
 
 export function showQr(S) {
   const url = shareUrl(S);
-  const s = openSheet('📱 내 폰으로 가져가기', '카메라로 QR을 찍으면 방금 만든 앱이 그대로 열려요. 서버에 저장하지 않고 주소 안에 선택값만 담았어요.');
+  const s = openSheet('내 폰으로 가져가기', '카메라로 QR을 찍으면 방금 만든 앱이 그대로 열려요. 서버에 저장하지 않고 주소 안에 선택값만 담았어요.');
   const box = el('div', 'qrbox');
   const svgWrap = el('div');
   try { svgWrap.innerHTML = QR.toSvg(url); } catch (e) { svgWrap.textContent = 'QR 생성 실패'; }
@@ -34,7 +34,7 @@ export function showQr(S) {
 }
 
 export function showPrompt(S) {
-  const s = openSheet('💬 진짜 AI에게 시키려면?', '방금 버튼으로 고른 것을 말로 풀면 이런 프롬프트가 돼요. Claude·ChatGPT·Gemini 어디에 붙여 넣어도 비슷한 앱이 나옵니다.');
+  const s = openSheet('진짜 AI에게 시키려면?', '방금 버튼으로 고른 것을 말로 풀면 이런 프롬프트가 돼요. Claude·ChatGPT·Gemini 어디에 붙여 넣어도 비슷한 앱이 나옵니다.');
   const ta = el('textarea'); ta.readOnly = true; ta.value = promptFor(S); s.appendChild(ta);
   const row = el('div', 'row');
   const copy = el('button', 'btn primary', '프롬프트 복사');

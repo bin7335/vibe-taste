@@ -16,7 +16,7 @@ export default function mount(root, ctx) {
   const input = el('input'); input.placeholder = '여기에 똑같이 입력'; input.autocomplete = 'off'; input.style.fontSize = '22px'; input.style.fontWeight = '700'; input.disabled = true;
   input.setAttribute('aria-label', '단어 입력');
   const row = el('div', 'row');
-  const start = btn('▶ 시작', 'pb', begin);
+  const start = btn('시작', 'pb', begin);
   row.append(start);
   f.body.append(top, word, input, row);
 
@@ -31,7 +31,7 @@ export default function mount(root, ctx) {
     timer = setInterval(() => { left--; sTime.set(left + '초'); if (left <= 5 && left > 0) sfx.tick(); if (left <= 0) finish(); }, 1000);
   }
   function finish() {
-    clearInterval(timer); running = false; input.disabled = true; start.disabled = false; start.textContent = '🔁 다시';
+    clearInterval(timer); running = false; input.disabled = true; start.disabled = false; start.textContent = '다시';
     const wpm = Math.round(ok / total * 60);
     word.innerHTML = ''; word.append(`${ok}단어 · 분당 ${wpm}단어`);
     f.say(ok >= 10 ? f.char.cheer : ok >= 5 ? '좋아, 점점 빨라지네!' : f.char.lines[2]); sfx.win();
@@ -43,7 +43,7 @@ export default function mount(root, ctx) {
     const v = input.value.trim();
     if (v === target) {
       ok++; idx++; input.value = ''; sOk.set(ok); sfx.ok();
-      word.innerHTML = ''; const okEl = el('span', 'ok', '✓ ' + target); word.appendChild(okEl);
+      word.innerHTML = ''; const okEl = el('span', 'ok', '' + target); word.appendChild(okEl);
       setTimeout(show, 150);
       if (ok % 5 === 0) f.say(rng.pick(['5개 돌파!', f.char.lines[1], '손가락이 날아다닌다!']), 1500);
     } else if (!target.startsWith(v)) { wrong++; }

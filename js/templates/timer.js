@@ -18,15 +18,15 @@ export default function mount(root, ctx) {
   const row = el('div', 'row'); row.style.justifyContent = 'center';
   const minus = btn('−1분', 'pb sub', () => adjust(-60));
   const plus = btn('+1분', 'pb sub', () => adjust(60));
-  const go = btn('▶ 시작', 'pb', toggle);
-  const reset = btn('↺ 처음으로', 'pb sub', () => { stop(); left = total; render(); f.say(f.char.lines[0]); });
+  const go = btn('시작', 'pb', toggle);
+  const reset = btn('처음으로', 'pb sub', () => { stop(); left = total; render(); f.say(f.char.lines[0]); });
   row.append(minus, go, plus, reset);
   const presets = el('div', 'row'); presets.style.justifyContent = 'center';
   [1, 3, 5, 10].forEach(m => presets.appendChild(btn(`${m}분`, 'pb sub', () => { stop(); total = left = m * 60; render(); })));
   f.body.append(ring, row, presets);
 
   const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-  function render() { t.textContent = fmt(left); prog.style.strokeDashoffset = C * (1 - left / Math.max(1, total)); prog.style.stroke = left <= 10 && left > 0 ? '#ef4444' : 'var(--p-ac)'; }
+  function render() { t.textContent = fmt(left); prog.style.strokeDashoffset = C * (1 - left / Math.max(1, total)); prog.style.stroke = left <= 10 && left > 0 ? 'var(--color-accent-3)' : 'var(--p-ac)'; }
   function adjust(s) { total = Math.max(10, Math.min(3600, total + s)); left = Math.max(1, Math.min(total, left + s)); render(); }
   function tick() {
     left--; render();
@@ -36,13 +36,13 @@ export default function mount(root, ctx) {
     if (left <= 0) { stop(); done(); }
   }
   function toggle() { running ? stop() : start(); }
-  function start() { if (left <= 0) left = total; running = true; go.textContent = '⏸ 일시정지'; f.say(rng.pick(['시작! 집중하자.', f.char.lines[0]])); clearInterval(timer); timer = setInterval(tick, 1000); }
-  function stop() { running = false; go.textContent = '▶ 시작'; clearInterval(timer); }
+  function start() { if (left <= 0) left = total; running = true; go.textContent = '일시정지'; f.say(rng.pick(['시작! 집중하자.', f.char.lines[0]])); clearInterval(timer); timer = setInterval(tick, 1000); }
+  function stop() { running = false; go.textContent = '시작'; clearInterval(timer); }
   function done() {
     f.say(f.char.cheer); sfx.win(); t.textContent = '끝!';
     for (let i = 0; i < 24; i++) {
-      const s = el('span', '', rng.pick(d.theme.glyphs));
-      Object.assign(s.style, { position: 'absolute', left: rng() * 100 + '%', top: '-30px', fontSize: 18 + rng() * 16 + 'px', animation: `fall ${1.5 + rng() * 1.5}s linear forwards`, zIndex: 3, pointerEvents: 'none' });
+      const s = el('span');
+      Object.assign(s.style, { position: 'absolute', left: rng() * 100 + '%', top: '-30px', width: '10px', height: '16px', borderRadius: '2px', background: rng.pick(d.theme.palette), animation: `fall ${1.5 + rng() * 1.5}s linear forwards`, zIndex: 3, pointerEvents: 'none' });
       root.appendChild(s); setTimeout(() => s.remove(), 3200);
     }
   }

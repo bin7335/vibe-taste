@@ -14,7 +14,7 @@ export default function mount(root, ctx) {
 
   const top = el('div', 'row');
   const sRound = stat('따라치기 단계', '-'), sBest = stat('최고', 0);
-  const simon = btn(`🎵 ${d.char.name}가 치는 걸 따라치기`, 'pb', startSimon);
+  const simon = btn(`${d.char.name}가 치는 걸 따라치기`, 'pb', startSimon);
   top.append(simon, sRound, sBest);
   const keys = el('div', 'keys');
   const keyEls = NOTES.map((_, i) => {

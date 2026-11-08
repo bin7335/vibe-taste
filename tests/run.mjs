@@ -90,7 +90,7 @@ for (const [a, th, c, d] of CASES) {
     const r = await ev(`${H} VT.skip(); await wait(900);
       assert($('#scr-result').classList.contains('on'),'결과 화면 바로'); assert($('#rbadge').textContent.includes('폰'),'링크로 연 배지');
       assert($('#stage .app h3').textContent.includes('테스트 앱'),'제목'); assert($$('#stage .fx span').length>0,'장식 효과');
-      const bg=getComputedStyle($('#stage')).backgroundImage; assert(bg.includes('gradient'),'테마 배경');
+      const bg=$('#stage').style.getPropertyValue('--p-bg'); assert(bg.includes('oklch'),'테마 배경 '+bg);
       let n=0; for(let r=0;r<2;r++) for(const b of btns()){ b.click(); n++; await wait(30); }
       for(const i of $$('#stage input:not([type=checkbox]), #stage textarea')){ i.value=${JSON.stringify(XSS)}; i.dispatchEvent(new Event('input',{bubbles:true})); i.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true})); }
       for(const b of btns().slice(0,8)){ b.click(); await wait(30); }

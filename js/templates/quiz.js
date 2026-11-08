@@ -43,16 +43,16 @@ export default function mount(root, ctx) {
     const ok = c === qs[i].answer;
     [...choices.children].forEach(x => { x.disabled = true; if (x.textContent.slice(2) === qs[i].answer) x.classList.add('ok'); });
     if (b && !ok) b.classList.add('no');
-    if (ok) { score++; sScore.set(score); sfx.ok(); f.say(rng.pick(['정답! ' + f.char.lines[1], '맞았어! 👏', f.char.lines[2]])); }
+    if (ok) { score++; sScore.set(score); sfx.ok(); f.say(rng.pick(['정답! ' + f.char.lines[1], '맞았어!', f.char.lines[2]])); }
     else { sfx.no(); f.say(c === null ? '시간 초과! 정답은 "' + qs[i].answer + '"' : f.char.sad); }
-    next.hidden = false; next.textContent = i + 1 >= qs.length ? '결과 보기 🏁' : '다음 문제 →';
+    next.hidden = false; next.textContent = i + 1 >= qs.length ? '결과 보기' : '다음 문제 →';
     next.focus();
   }
   function finish() {
-    qEl.textContent = `${count}문제 중 ${score}개 정답! ${score === count ? '만점!! 🏆' : score >= count / 2 ? '잘했어요 🎉' : '다시 도전해 봐요 💪'}`;
+    qEl.textContent = `${count}문제 중 ${score}개 정답! ${score === count ? '만점!!' : score >= count / 2 ? '잘했어요' : '다시 도전해 봐요'}`;
     choices.textContent = ''; sTime.set('-');
     next.hidden = true;
-    const again = btn('🔁 다시 풀기', 'pb', () => { score = 0; sScore.set(0); again.remove(); qs.forEach(q => q.choices = rng.shuffle(q.choices)); ask(0); });
+    const again = btn('다시 풀기', 'pb', () => { score = 0; sScore.set(0); again.remove(); qs.forEach(q => q.choices = rng.shuffle(q.choices)); ask(0); });
     bottom.appendChild(again);
     f.say(score === count ? f.char.cheer : f.char.lines[2]); if (score === count) sfx.win(); else sfx.ok();
   }

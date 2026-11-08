@@ -21,8 +21,8 @@ export default function mount(root, ctx) {
   const right = el('div');
   const wheel = el('div', 'wheel', '뽑기를 눌러요');
   const row = el('div', 'row'); row.style.marginTop = '10px';
-  const spin = btn('🎰 뽑기!', 'pb', doSpin);
-  const num = btn('🔢 숫자 뽑기(1-30)', 'pb sub', () => { ta.value = Array.from({ length: 30 }, (_, i) => String(i + 1)).join('\n'); doSpin(); });
+  const spin = btn('뽑기!', 'pb', doSpin);
+  const num = btn('숫자 뽑기(1-30)', 'pb sub', () => { ta.value = Array.from({ length: 30 }, (_, i) => String(i + 1)).join('\n'); doSpin(); });
   const history = el('div', 'row'); history.style.marginTop = '8px';
   row.append(spin, num);
   right.append(wheel, row, history);

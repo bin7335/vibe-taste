@@ -7,7 +7,7 @@ import { TEMPLATES } from './templates/index.js';
 
 const QUESTIONS = [
   { key: 'kind', title: '무엇을 만들까요?', sub: '오늘 만들 앱의 큰 방향이에요.', options: () => Object.entries(KINDS) },
-  { key: 'app', title: '어떤 앱이 좋아요?', sub: '둘 중 하나를 고르거나, AI에게 맡겨도 돼요.', options: S => [...KINDS[S.kind].apps.map(a => [a, APPS[a]]), ['__ai', { label: 'AI가 골라줘', emoji: '🎲', sub: '랜덤으로 하나!', ai: true }]] },
+  { key: 'app', title: '어떤 앱이 좋아요?', sub: '둘 중 하나를 고르거나, AI에게 맡겨도 돼요.', options: S => [...KINDS[S.kind].apps.map(a => [a, APPS[a]]), ['__ai', { label: 'AI가 골라줘', emoji: '', sub: '랜덤으로 하나!', ai: true }]] },
   { key: 'theme', title: '어떤 분위기로 할까요?', sub: '색깔·배경·장식 효과가 바뀌어요.', options: () => Object.entries(THEMES) },
   { key: 'char', title: '주인공은 누구?', sub: '앱 안에서 응원해 주는 캐릭터예요.', options: () => Object.entries(CHARS) },
   { key: 'level', title: '얼마나 빠르게?', sub: '게임 속도, 문제 수, 제한 시간이 달라져요.', options: () => LEVELS.map((l, i) => l && [String(i), l]).filter(Boolean) },
@@ -22,12 +22,11 @@ function show(name) { Object.entries(screens).forEach(([k, s]) => s.classList.to
 
 // ---------- 질문 ----------
 function renderSteps() {
-  html($('#steps'), QUESTIONS.map((_, i) => `<i class="${i < step ? 'done' : i === step ? 'cur' : ''}"></i>`).join(''));
+  html($('#steps'), `<span>${Math.min(step + 1, QUESTIONS.length)} / ${QUESTIONS.length}</span><span class="dots">${QUESTIONS.map((_, i) => `<i class="${i < step ? 'done' : i === step ? 'cur' : ''}"></i>`).join('')}</span>`);
 }
 function renderQuestion() {
   const q = QUESTIONS[step];
   $('#hero').style.display = step === 0 ? '' : 'none';
-  $('#qnum').textContent = `질문 ${step + 1} / ${QUESTIONS.length}`;
   $('#qtitle').textContent = q.title; $('#qsub').textContent = q.sub;
   $('#back').style.visibility = step === 0 ? 'hidden' : '';
   const opts = $('#opts'); html(opts, '');
@@ -38,26 +37,27 @@ function renderQuestion() {
     $('#qhint').textContent = '글자·숫자·♥★!? 만 쓸 수 있어요. Enter를 눌러도 만들어져요.';
     setTimeout(() => inp.focus(), 50);
   } else {
-    opts.hidden = false; nameRow.hidden = true; $('#qhint').textContent = '키보드 A·B·C·D(또는 1-4)로도 고를 수 있어요.';
+    opts.hidden = false; nameRow.hidden = true; $('#qhint').textContent = '키보드 A, B, C, D 또는 1에서 4로도 고를 수 있어요.';
     q.options(S).forEach(([val, o], i) => {
       const b = el('button', 'opt' + (o.ai ? ' ai' : ''));
       b.dataset.val = val;
       b.appendChild(el('span', 'key', 'ABCD'[i]));
-      b.appendChild(el('span', 'em', o.emoji));
-      b.appendChild(el('b', '', o.label));
-      if (o.sub) b.appendChild(el('small', '', o.sub));
+      const body = el('span');
+      body.appendChild(el('b', '', o.label));
+      if (o.sub) body.appendChild(el('small', '', o.sub));
+      b.appendChild(body);
       b.addEventListener('click', () => choose(val));
       opts.appendChild(b);
     });
   }
   const picked = $('#picked'); html(picked, '');
   const d = { kind: S.kind && KINDS[S.kind], app: S.app && APPS[S.app], theme: S.theme && THEMES[S.theme], char: S.char && CHARS[S.char], level: S.level && LEVELS[S.level] };
-  Object.values(d).filter(Boolean).forEach(o => picked.appendChild(el('span', '', `${o.emoji} ${o.label}`)));
+  Object.values(d).filter(Boolean).forEach(o => picked.appendChild(el('span', '', o.label)));
   renderSteps();
 }
 function choose(val) {
   const q = QUESTIONS[step]; sfx.tap();
-  if (q.key === 'app' && val === '__ai') { val = KINDS[S.kind].apps[Math.floor(Math.random() * 2)]; toast(`AI 추천: ${APPS[val].emoji} ${APPS[val].label}`); }
+  if (q.key === 'app' && val === '__ai') { val = KINDS[S.kind].apps[Math.floor(Math.random() * 2)]; toast(`AI 추천: ${APPS[val].label}`); }
   if (q.key === 'kind' && S.kind !== val) S.app = null;
   S[q.key] = q.key === 'level' ? parseInt(val, 10) : val;
   step++; renderQuestion();
@@ -92,10 +92,10 @@ $('#skip').addEventListener('click', () => build && build.skip());
 function showResult() {
   const d = describe(S);
   show('result');
-  $('#rtitle').textContent = `${d.app.emoji} ${d.name}`;
-  $('#rbadge').textContent = fromLink ? '📱 내 폰에서 열렸어요' : '✅ 완성!';
+  $('#rtitle').textContent = d.name;
+  $('#rbadge').textContent = fromLink ? '내 폰에서 열렸어요' : '완성!';
   $('#rbadge').classList.toggle('phone', fromLink);
-  $('#rmeta').textContent = `${d.kind.label} › ${d.app.label} · ${d.theme.label} 분위기 · 주인공 ${d.char.label} · ${d.level.label}`;
+  $('#rmeta').textContent = `${d.kind.label}의 ${d.app.label}, ${d.theme.label} 분위기, 주인공 ${d.char.label}, ${d.level.label}`;
   const stage = $('#stage');
   if (destroyApp) destroyApp();
   const ctx = { S, d, rng: rng(S.seed), name: d.name };
@@ -127,7 +127,7 @@ function renderTweak() {
     body.appendChild(el('div', 'k', label));
     const chips = el('div', 'chips');
     for (const [val, o] of opts) {
-      const c = el('button', 'chip' + (String(S[key]) === String(val) ? ' on' : ''), `${o.emoji} ${o.label}`);
+      const c = el('button', 'chip' + (String(S[key]) === String(val) ? ' on' : ''), o.label);
       c.addEventListener('click', () => {
         if (String(S[key]) === String(val)) return;
         if (key === 'kind') { S.kind = val; S.app = KINDS[val].apps[0]; }

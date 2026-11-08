@@ -9,7 +9,7 @@ export default function mount(root, ctx) {
   const spawnEvery = [900, 700, 500, 380][S.level - 1];
 
   const top = el('div', 'row');
-  const sScore = stat('점수', 0), sLives = stat('목숨', '❤️❤️❤️'), sBest = stat('최고', 0);
+  const sScore = stat('점수', 0), sLives = stat('목숨', 3), sBest = stat('최고', 0);
   top.append(sScore, sLives, sBest);
   const canvas = el('canvas'); canvas.width = 720; canvas.height = 420; canvas.style.height = 'auto'; canvas.style.aspectRatio = '720/420';
   const wrap = el('div'); wrap.style.position = 'relative'; wrap.appendChild(canvas);
@@ -56,22 +56,22 @@ export default function mount(root, ctx) {
   let hitThisFrame = false;
   function hit() {
     hitThisFrame = true; lives--; sfx.no();
-    sLives.set('❤️'.repeat(lives) + '🖤'.repeat(3 - lives));
+    sLives.set(lives);
     f.say(lives ? f.char.sad : '으악! 게임 끝…', 1500);
     canvas.style.filter = 'brightness(1.6)'; setTimeout(() => canvas.style.filter = '', 120);
     if (!lives) gameOver();
   }
   function gameOver() {
     running = false; cancelAnimationFrame(raf); best = Math.max(best, score); sBest.set(best);
-    overlay(wrap, `점수 ${score}`, score > 40 ? f.char.cheer : '다시 해 볼까?', '🔁 다시 하기', start);
+    overlay(wrap, `점수 ${score}`, score > 40 ? f.char.cheer : '다시 해 볼까?', '다시 하기', start);
   }
   function start() {
     drops = []; lives = 3; score = 0; running = true; startT = performance.now(); lastSpawn = 0;
-    sLives.set('❤️❤️❤️'); sScore.set(0); player.x = W / 2;
+    sLives.set(3); sScore.set(0); player.x = W / 2;
     f.say(f.char.lines[0]); sfx.ok();
     cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
   }
-  const startBtn = btn('▶ 시작', 'pb', () => { if (!running) start(); });
+  const startBtn = btn('시작', 'pb', () => { if (!running) start(); });
   help.prepend(startBtn);
 
   const onDown = e => { if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { keys.left = true; e.preventDefault(); } if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { keys.right = true; e.preventDefault(); } };

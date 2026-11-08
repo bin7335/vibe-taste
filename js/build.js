@@ -102,7 +102,7 @@ export function codeFor(S) {
     `const hero = new Hero("${d.char.emoji}", { greet: "${d.char.lines[0]}" });`,
     ``,
   ];
-  const tail = [``, `app.mount("#stage");   // ✅ 완성!`];
+  const tail = [``, `app.mount("#stage");   // 완성!`];
   return [...head, ...SNIPPETS[S.app](d), ...tail].join('\n');
 }
 
@@ -115,18 +115,18 @@ export function runBuild(S, { duration = 5200, onDone }) {
   const pre = $('#code'), bar = $('#bbar'), status = $('#bstatus'), tab = $('#btab'), prev = $('#preview');
   const sk = [$('#sk1'), $('#sk2'), $('#sk3'), $('#sk4')];
   sk.forEach(s => s.classList.remove('in'));
-  prev.style.background = '#fff'; prev.style.color = '';
-  $('.sk-char .em', prev).textContent = '⬜';
+  prev.style.removeProperty('--p-bg'); prev.style.removeProperty('--p-ink');
+  $('.sk-char .em', prev).textContent = '';
   $$('.done-flash', prev).forEach(e => e.remove());
-  pre.textContent = ''; bar.style.width = '0%'; status.textContent = STATUS[0];
+  pre.textContent = ''; bar.style.transform = 'scaleX(0)'; status.textContent = STATUS[0];
 
   let raf = 0, done = false, start = 0, lastStage = -1; // 백그라운드 탭에서도 진행되게 rAF 대신 setInterval
   const total = code.length;
   const finish = () => {
     if (done) return; done = true; clearInterval(raf);
-    pre.textContent = code; bar.style.width = '100%'; tab.textContent = code.split('\n').length + ' 줄';
+    pre.textContent = code; bar.style.transform = 'scaleX(1)'; tab.textContent = code.split('\n').length + ' 줄';
     paint(1);
-    const f = document.createElement('div'); f.className = 'done-flash'; f.textContent = '✅ 완성!'; prev.appendChild(f);
+    const f = document.createElement('div'); f.className = 'done-flash'; f.textContent = '완성'; prev.appendChild(f);
     status.textContent = '완성! 앱을 여는 중…';
     setTimeout(() => onDone && onDone(), 650);
   };
@@ -134,7 +134,7 @@ export function runBuild(S, { duration = 5200, onDone }) {
     const stage = p >= 0.97 ? 4 : p >= 0.72 ? 3 : p >= 0.48 ? 2 : p >= 0.22 ? 1 : 0;
     if (stage === lastStage) return; lastStage = stage;
     status.textContent = STATUS[Math.min(stage + 1, STATUS.length - 1)];
-    if (stage >= 1) { prev.style.background = d.theme.bg; prev.style.color = d.theme.ink; sk[0].classList.add('in'); }
+    if (stage >= 1) { prev.style.setProperty('--p-bg', d.theme.bg); prev.style.setProperty('--p-ink', d.theme.ink); sk[0].classList.add('in'); }
     if (stage >= 2) { sk[1].classList.add('in'); $('.sk-char .em', prev).textContent = d.char.emoji; }
     if (stage >= 3) sk[2].classList.add('in');
     if (stage >= 4) sk[3].classList.add('in');
@@ -147,7 +147,7 @@ export function runBuild(S, { duration = 5200, onDone }) {
     const n = Math.floor(total * p);
     pre.textContent = code.slice(0, n);
     const cur = document.createElement('span'); cur.className = 'cur'; pre.appendChild(cur);
-    bar.style.width = (p * 100).toFixed(0) + '%';
+    bar.style.transform = `scaleX(${p.toFixed(3)})`;
     tab.textContent = code.slice(0, n).split('\n').length + ' 줄';
     paint(p);
     if (p >= 1) return finish();

@@ -15,9 +15,9 @@ export default function mount(root, ctx) {
   [3, 6, 14, 28].forEach(s => { const b = btn(s < 6 ? '얇게' : s < 14 ? '보통' : s < 28 ? '굵게' : '왕굵게', 'pb sub', () => { size = s; stamp = null; }); sizes.appendChild(b); });
   const stamps = el('div', 'palette');
   [d.char.emoji, ...d.theme.glyphs.slice(0, 4)].forEach(g => { const b = el('button', 'st', g); b.addEventListener('click', () => { stamp = g; sel(b); }); stamps.appendChild(b); });
-  const eraser = btn('🧽 지우개', 'pb sub', () => { stamp = null; color = 'erase'; sel(eraser); });
-  const clear = btn('🗑 새 종이', 'pb sub', () => { fill(); sfx.tap(); });
-  const save = btn('💾 저장(PNG)', 'pb sub', () => { try { const a = el('a'); a.href = canvas.toDataURL('image/png'); a.download = `${d.name}.png`; a.click(); f.say('저장했어! 갤러리를 확인해 봐.'); } catch (e) { f.say('저장이 막혔어요.'); } });
+  const eraser = btn('지우개', 'pb sub', () => { stamp = null; color = 'erase'; sel(eraser); });
+  const clear = btn('새 종이', 'pb sub', () => { fill(); sfx.tap(); });
+  const save = btn('저장(PNG)', 'pb sub', () => { try { const a = el('a'); a.href = canvas.toDataURL('image/png'); a.download = `${d.name}.png`; a.click(); f.say('저장했어! 갤러리를 확인해 봐.'); } catch (e) { f.say('저장이 막혔어요.'); } });
   const tools = el('div', 'row'); tools.append(eraser, clear, save);
   function sel(b) { [...palette.children, ...stamps.children, eraser].forEach(x => x.classList.toggle('on', x === b)); }
 
@@ -42,7 +42,7 @@ export default function mount(root, ctx) {
   let mt = 0;
   if (missionSec) {
     const sMission = stat('미션', '-'), sTime = stat('남은 시간', '-');
-    const mbtn = btn('🎯 미션 시작', 'pb', () => {
+    const mbtn = btn('미션 시작', 'pb', () => {
       const word = rng.pick(d.theme.words); let left = missionSec;
       sMission.set(word); sTime.set(left + '초'); fill();
       f.say(`${missionSec}초 안에 "${word}"을(를) 그려 봐!`);
