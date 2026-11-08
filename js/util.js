@@ -1,5 +1,5 @@
 // 공통 도우미: 난수, 이름 정리, 효과음, DOM, 토스트, URL 상태
-import { KINDS, APPS, THEMES, CHARS, LEVELS, NAME_PATTERNS, BANNED } from './data.js';
+import { KINDS, APPS, THEMES, CHARS, LEVELS, NAME_PATTERNS, BANNED, SOUNDS, VOICES, SIZES, FXS } from './data.js';
 
 export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -52,10 +52,12 @@ export function parseParams(search) {
   let name = sanitizeName(p.get('n'));
   if (isBanned(name)) name = '';
   const kind = Object.keys(KINDS).find(k => KINDS[k].apps.includes(app));
-  return { kind, app, theme, char: ch, level, seed, name };
+  const pickKey = (v, table, dflt) => (v in table ? v : dflt);
+  return { kind, app, theme, char: ch, level, seed, name,
+    sound: pickKey(p.get('so'), SOUNDS, 'bell'), voice: pickKey(p.get('v'), VOICES, 'kind'), size: pickKey(p.get('z'), SIZES, 'normal'), fx: pickKey(p.get('fx'), FXS, 'confetti') };
 }
 export function buildQuery(S) {
-  const p = new URLSearchParams({ a: S.app, t: S.theme, c: S.char, d: String(S.level), s: String(S.seed) });
+  const p = new URLSearchParams({ a: S.app, t: S.theme, c: S.char, d: String(S.level), s: String(S.seed), so: S.sound, v: S.voice, z: S.size, fx: S.fx });
   if (S.name) p.set('n', S.name);
   return '?' + p.toString();
 }
@@ -77,12 +79,16 @@ export function beep(freq = 660, dur = 0.12, type = 'sine', vol = 0.08) {
     return o;
   } catch (e) { return null; }
 }
+// 효과음 프로필(선택 7): 음색과 크기, 또는 무음
+let profile = SOUNDS.bell;
+export function setSound(key) { profile = SOUNDS[key] || SOUNDS.bell; }
+const fx = (f, d, type, vol) => profile.mute ? null : beep(f, d, profile.type || type, vol * profile.vol);
 export const sfx = {
-  tap: () => beep(880, 0.06, 'square', 0.04),
-  ok: () => { beep(660, 0.1); setTimeout(() => beep(990, 0.14), 90); },
-  no: () => beep(180, 0.2, 'sawtooth', 0.06),
-  win: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => beep(f, 0.18), i * 110)),
-  tick: () => beep(1200, 0.03, 'square', 0.02),
+  tap: () => fx(880, 0.06, 'square', 0.04),
+  ok: () => { fx(660, 0.1, 'sine', 0.08); setTimeout(() => fx(990, 0.14, 'sine', 0.08), 90); },
+  no: () => fx(180, 0.2, 'sawtooth', 0.06),
+  win: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => fx(f, 0.18, 'sine', 0.08), i * 110)),
+  tick: () => fx(1200, 0.03, 'square', 0.02),
 };
 
 // ----- 토스트 -----
@@ -99,7 +105,12 @@ export async function copyText(s) {
   }
 }
 
-export const describe = S => ({
-  kind: KINDS[S.kind], app: APPS[S.app], theme: THEMES[S.theme], char: CHARS[S.char], level: LEVELS[S.level],
-  name: S.name || defaultName(S),
-});
+export function describe(S) {
+  const base = CHARS[S.char], v = VOICES[S.voice] || VOICES.kind;
+  const char = { ...base, lines: v.lines(base.name), cheer: v.cheer(base.name), sad: v.sad(base.name) };
+  return {
+    kind: KINDS[S.kind], app: APPS[S.app], theme: THEMES[S.theme], char, level: LEVELS[S.level],
+    sound: SOUNDS[S.sound] || SOUNDS.bell, voice: v, size: SIZES[S.size] || SIZES.normal, fx: FXS[S.fx] || FXS.confetti,
+    name: S.name || defaultName(S),
+  };
+}

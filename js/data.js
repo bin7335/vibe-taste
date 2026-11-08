@@ -1,10 +1,10 @@
 // 선택지·테마·캐릭터·난이도 데이터. 사용자 입력이 아닌 고정 데이터만 둔다.
 
 export const KINDS = {
-  play:  { label: '놀이',      emoji: '🎮', sub: '게임으로 신나게',       apps: ['reaction', 'dodge'] },
-  study: { label: '공부',      emoji: '📚', sub: '배우면서 재미있게',     apps: ['quiz', 'typing'] },
-  tool:  { label: '교실 도구', emoji: '🧰', sub: '수업에 바로 쓰는',      apps: ['timer', 'picker'] },
-  art:   { label: '예술',      emoji: '🎨', sub: '만들고 연주하는',       apps: ['paint', 'piano'] },
+  play:  { label: '놀이', emoji: '🎮', sub: '게임으로 신나게',     apps: ['reaction', 'dodge', 'memory', 'mole'] },
+  study: { label: '공부', emoji: '📚', sub: '배우면서 재미있게',   apps: ['quiz', 'typing', 'flash', 'math'] },
+  tool:  { label: '업무', emoji: '🧰', sub: '교실과 사무실에서 바로 쓰는', apps: ['timer', 'picker', 'groups', 'checklist'] },
+  art:   { label: '예술', emoji: '🎨', sub: '만들고 연주하는',     apps: ['paint', 'piano', 'beat', 'pixel'] },
 };
 
 export const APPS = {
@@ -16,6 +16,14 @@ export const APPS = {
   picker:   { label: '뽑기',          emoji: '🎰', sub: '발표자·순서 랜덤 뽑기' },
   paint:    { label: '그림판',        emoji: '🖌️', sub: '그리고 도장 찍기' },
   piano:    { label: '미니 피아노',   emoji: '🎹', sub: '연주하고 따라치기' },
+  memory:   { label: '짝 맞추기',     emoji: '🃏', sub: '카드를 뒤집어 같은 그림 찾기' },
+  mole:     { label: '두더지 잡기',   emoji: '🔨', sub: '튀어나오는 주인공을 재빨리 탭' },
+  flash:    { label: '낱말 카드',     emoji: '🗂️', sub: '카드를 뒤집어 외우기' },
+  math:     { label: '암산 연습',     emoji: '🔢', sub: '제한 시간 안에 계산 문제 풀기' },
+  groups:   { label: '모둠 짜기',     emoji: '👥', sub: '이름을 넣으면 모둠을 랜덤으로' },
+  checklist:{ label: '체크리스트',    emoji: '☑️', sub: '할 일을 적고 체크하며 진행률 보기' },
+  beat:     { label: '비트 메이커',   emoji: '🥁', sub: '칸을 눌러 리듬을 만들고 재생' },
+  pixel:    { label: '픽셀 아트',     emoji: '🧩', sub: '칸을 칠해 도트 그림 만들기' },
 };
 
 export const THEMES = {
@@ -107,3 +115,31 @@ export const NAME_PATTERNS = [
 export const BANNED = ['씨발', '시발', 'ㅅㅂ', 'ㅆㅂ', '병신', 'ㅂㅅ', '좆', '개새', '새끼', '지랄', '꺼져', '섹스', '자지', '보지', '느금', '엠창', '니미', '닥쳐', '죽어', 'fuck', 'shit', 'sex', 'bitch'];
 
 export const SAMPLE_NAMES = ['민준', '서연', '도윤', '하은', '지호', '수아', '예준', '지우', '시우', '서윤', '주원', '하린'];
+
+// 선택 7-9: 효과음 · 말투 · 글자 크기 · 축하 효과 (10문항 체험)
+export const SOUNDS = {
+  bell: { label: '띵동 소리', sub: '맑은 종소리', type: 'sine', vol: 1 },
+  chip: { label: '8비트 게임 소리', sub: '옛날 오락실 느낌', type: 'square', vol: 0.8 },
+  soft: { label: '조용한 소리', sub: '작고 부드럽게', type: 'triangle', vol: 0.5 },
+  none: { label: '소리 없음', sub: '교실에서 조용히', mute: true, vol: 0 },
+};
+export const VOICES = {
+  kind:  { label: '다정하게', sub: '"잘하고 있어, 천천히 해도 돼"',
+    lines: n => [`안녕, 나는 ${n}이야. 같이 해 볼까?`, '잘하고 있어, 천천히 해도 돼.', '오늘도 수고했어.'], cheer: n => `정말 멋지다! ${n}이 자랑스러워.`, sad: () => '괜찮아, 누구나 그래. 다시 해 보자.' },
+  funny: { label: '장난스럽게', sub: '"에이, 그걸 틀려? 농담이야!"',
+    lines: n => [`${n} 등장! 두구두구두구!`, '오오, 이 정도면 천재 아니야?', '내 점수보다 높네, 질투 난다.'], cheer: () => '우와아아! 전설이 탄생했다!', sad: () => '에이, 그걸 틀려? 농담이야, 한 번 더!' },
+  coach: { label: '코치처럼', sub: '"집중! 한 번 더!"',
+    lines: n => [`코치 ${n}이다. 준비됐나?`, '집중! 호흡 고르고.', '좋아, 기록이 올라간다.'], cheer: () => '신기록! 이게 훈련의 힘이다!', sad: () => '실수는 기록이 된다. 한 번 더!' },
+  robot: { label: '로봇처럼', sub: '"삐빅. 정답 확률 97%"',
+    lines: n => [`${n} 시스템 가동. 삐빅.`, '분석 중… 반응 속도 양호.', '데이터 저장 완료.'], cheer: () => '삐리릭! 최고 기록 갱신. 축하 프로토콜 실행.', sad: () => '오류 감지. 재시도를 권장함.' },
+};
+export const SIZES = {
+  big:     { label: '큼직하게', sub: '멀리서도 보이게, 저학년용', scale: 1.15 },
+  normal:  { label: '보통', sub: '딱 적당하게', scale: 1 },
+  compact: { label: '아기자기하게', sub: '작고 촘촘하게, 고학년용', scale: 0.9 },
+};
+export const FXS = {
+  confetti: { label: '색종이 팡팡', sub: '종이 조각이 계속 내려와요', n: 14 },
+  sparkle:  { label: '살짝 반짝', sub: '가끔 몇 개만', n: 5 },
+  calm:     { label: '차분하게', sub: '장식 없이 깔끔하게', n: 0 },
+};

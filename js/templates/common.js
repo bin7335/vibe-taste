@@ -9,7 +9,8 @@ export function frame(root, ctx) {
 
   const fx = el('div', 'fx'); fx.setAttribute('aria-hidden', 'true');
   // 잘라 붙인 색종이 조각: 테마 팔레트 색으로, 글자·이모지 없이
-  const n = 12;
+  root.style.fontSize = (d.size.scale * 100) + '%';
+  const n = d.fx.n;
   for (let i = 0; i < n; i++) {
     const s = el('span');
     s.style.left = (i * (100 / n) + rng() * 8) + '%';

@@ -62,15 +62,19 @@ await t('질문 흐름: 선택 → 이름 → 만들기 → 결과', async () =>
   await load(ORIGIN + '/');
   return await ev(`${H}
     assert($$('#opts .opt').length===4,'1번 질문 4지선다'); assert($('#nameRow').offsetParent===null,'이름칸 숨김');
-    click($$('#opts .opt')[1]); assert($$('#opts .opt').length===3,'2번 질문: 2개 + AI 추천'); click($$('#opts .opt')[2]);
-    assert(['quiz','typing'].includes(VT.S.app),'AI 추천이 공부 앱 중 하나');
-    click($$('#opts .opt')[2]); click($$('#opts .opt')[3]); click($$('#opts .opt')[0]);
+    click($$('#opts .opt')[1]); assert($$('#opts .opt').length===4&&$('#aiPick'),'2번 질문: 4개 + AI 추천 버튼'); click('#aiPick');
+    assert(['quiz','typing','flash','math'].includes(VT.S.app),'AI 추천이 공부 앱 중 하나'); assert(!$('#aiPick'),'AI 버튼은 2번 질문에만');
+    click($$('#opts .opt')[2]); click($$('#opts .opt')[3]); click($$('#opts .opt')[1]); click($$('#opts .opt')[0]);
+    assert($('#qtitle').textContent.includes('효과음'),'7번 질문 효과음'); click($$('#opts .opt')[3]);
+    assert($$('#opts .opt').length===3,'8번 질문 크기 3지선다'); click($$('#opts .opt')[0]); click($$('#opts .opt')[2]);
+    assert(VT.S.voice==='funny'&&VT.S.sound==='none'&&VT.S.size==='big'&&VT.S.fx==='calm','7-9번 선택 저장 '+JSON.stringify(VT.S));
     assert($('#nameRow').offsetParent!==null,'이름칸 보임'); assert($('#opts').offsetParent===null,'보기 숨김');
     $('#nameIn').value='내 퀴즈'; click('#goBuild'); await wait(400);
     assert($('#scr-build').classList.contains('on'),'코딩 화면'); assert($('#code').textContent.length>20,'코드 타이핑 시작');
     VT.skip(); await wait(900);
     assert($('#scr-result').classList.contains('on'),'결과 화면'); assert($('#rtitle').textContent.includes('내 퀴즈'),'제목에 이름');
-    assert(location.search.includes('n=')&&location.search.includes('t=forest')&&location.search.includes('c=ghost')&&location.search.includes('d=1'),'URL 상태 '+location.search);
+    assert(location.search.includes('n=')&&location.search.includes('t=forest')&&location.search.includes('c=ghost')&&location.search.includes('d=1')&&location.search.includes('so=none')&&location.search.includes('v=funny')&&location.search.includes('z=big')&&location.search.includes('fx=calm'),'URL 상태 '+location.search);
+    assert($$('#stage .fx span').length===0,'차분하게 → 장식 0'); assert($('#stage').style.fontSize==='115%','큼직하게 → 115%'); assert($('#stage .say').textContent.includes('등장'),'장난스러운 말투');
     return VT.S.app+' '+location.search;`);
 });
 await t('키보드 A-D로 선택', async () => { await load(ORIGIN + '/'); return await ev(`${H} document.dispatchEvent(new KeyboardEvent('keydown',{key:'d',bubbles:true})); assert(VT.S.kind==='art','D → 예술'); document.dispatchEvent(new KeyboardEvent('keydown',{key:'1',bubbles:true})); assert(VT.S.app==='paint','1 → 그림판'); return 'ok';`); });
@@ -81,8 +85,10 @@ await t('이름 필터: 금지어 거부·특수문자 제거·12자 제한', as
   assert(VT.sanitizeName('  별빛   냥이 ♥ ')==='별빛 냥이 ♥','공백 정리'); return 'ok';`));
 
 const CASES = [
-  ['reaction', 'space', 'robot', 4], ['dodge', 'sea', 'cat', 2], ['quiz', 'forest', 'dino', 3], ['typing', 'candy', 'ghost', 1],
-  ['timer', 'space', 'cat', 4], ['picker', 'sea', 'robot', 1], ['paint', 'forest', 'ghost', 2], ['piano', 'candy', 'dino', 3],
+  ['reaction', 'space', 'robot', 4], ['dodge', 'sea', 'cat', 2], ['memory', 'forest', 'dino', 3], ['mole', 'candy', 'ghost', 4],
+  ['quiz', 'forest', 'dino', 3], ['typing', 'candy', 'ghost', 1], ['flash', 'space', 'cat', 2], ['math', 'sea', 'robot', 4],
+  ['timer', 'space', 'cat', 4], ['picker', 'sea', 'robot', 1], ['groups', 'candy', 'dino', 2], ['checklist', 'forest', 'ghost', 3],
+  ['paint', 'forest', 'ghost', 2], ['piano', 'candy', 'dino', 3], ['beat', 'space', 'robot', 1], ['pixel', 'sea', 'cat', 4],
 ];
 for (const [a, th, c, d] of CASES) {
   await t(`앱 틀 ${a}: URL로 열기·마운트·버튼 연타·오류 0`, async () => {
@@ -104,7 +110,7 @@ for (const [a, th, c, d] of CASES) {
 }
 await t('375px: 결과 화면(피하기·피아노) 가로 넘침 없음', async () => {
   await metrics(375, 812, true); const out = [];
-  for (const a of ['dodge', 'piano', 'paint', 'picker']) { await load(`${ORIGIN}/?a=${a}&t=sea&c=cat&d=2&s=1`, 500); const w = await ev(`${H} VT.skip(); await wait(800); return document.documentElement.scrollWidth`); if (w > 380) throw new Error(a + ' scrollWidth ' + w); out.push(w); }
+  for (const a of ['dodge', 'piano', 'paint', 'picker', 'beat', 'pixel', 'groups', 'mole']) { await load(`${ORIGIN}/?a=${a}&t=sea&c=cat&d=2&s=1`, 500); const w = await ev(`${H} VT.skip(); await wait(800); return document.documentElement.scrollWidth`); if (w > 380) throw new Error(a + ' scrollWidth ' + w); out.push(w); }
   await metrics(1280, 720, false); return out.join(',');
 });
 await t('시드 고정: 같은 주소 → 같은 퀴즈 순서·이름', async () => {
@@ -115,13 +121,13 @@ await t('잘못된 URL 파라미터·금지어 이름 무시', async () => {
   await load(`${ORIGIN}/?a=evil&t=space&c=cat`, 500);
   const q = await ev(`return document.querySelector('#scr-q').classList.contains('on')`); if (!q) throw new Error('질문 화면이어야 함');
   await load(`${ORIGIN}/?a=quiz&t=space&c=cat&d=99&s=-5&n=${encodeURIComponent('씨발 퀴즈')}#${encodeURIComponent(XSS)}`, 500);
-  return ev(`${H} assert(VT.S.level===4,'d 상한 4'); assert(VT.S.seed>0,'시드 양수'); assert(VT.S.name==='','금지어 이름 비움'); VT.skip(); await wait(800); assert(!window.__xss,'xss'); return VT.describe(VT.S).name;`);
+  return ev(`${H} assert(VT.S.level===4,'d 상한 4'); assert(VT.S.seed>0,'시드 양수'); assert(VT.S.sound==='bell'&&VT.S.voice==='kind'&&VT.S.size==='normal'&&VT.S.fx==='confetti','빠진 선택은 기본값'); assert(VT.S.name==='','금지어 이름 비움'); VT.skip(); await wait(800); assert(!window.__xss,'xss'); return VT.describe(VT.S).name;`);
 });
 await t('QR 모달·프롬프트 모달·하나만 바꿔보기', async () => {
   await load(`${ORIGIN}/?a=timer&t=candy&c=ghost&d=2&s=42&n=${encodeURIComponent('내 타이머')}`, 500);
   const r = await ev(`${H} VT.skip(); await wait(800);
     click('#aQr'); assert(!$('#modal').hidden&&$('#sheet svg path'),'QR SVG'); assert($('#sheet .url').textContent.includes('a=timer'),'QR 주소'); VT.closeModal();
-    click('#aPrompt'); const p=$('#sheet textarea').value; assert(p.includes('타이머')&&p.includes('내 타이머')&&p.includes('사탕')&&p.includes('유령'),'프롬프트 내용'); VT.closeModal();
+    click('#aPrompt'); const p=$('#sheet textarea').value; assert(p.includes('타이머')&&p.includes('내 타이머')&&p.includes('사탕')&&p.includes('유령')&&p.includes('말투')&&p.includes('효과음'),'프롬프트 내용'); VT.closeModal();
     click('#aTweak'); assert(!$('#tweak').hidden,'바꿔보기 패널'); const chips=$$('#twBody .chip'); const sea=chips.find(c=>c.textContent.includes('바다')); click(sea); await wait(300);
     assert($('#scr-build').classList.contains('on'),'다시 코딩 화면'); VT.skip(); await wait(900);
     assert(VT.S.theme==='sea'&&VT.S.seed===42&&VT.S.name==='내 타이머','테마만 바뀌고 시드·이름 유지'); assert($('#rmeta').textContent.includes('바다'),'메타 갱신');
