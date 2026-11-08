@@ -100,7 +100,7 @@ function showResult() {
   const d = describe(S);
   show('result');
   $('#rtitle').textContent = d.name;
-  $('#rbadge').textContent = fromLink ? '내 폰에서 열렸어요' : '완성!';
+  $('#rbadge').textContent = fromLink ? '내 폰에서 열렸어요' : '공방에서 나왔습니다';
   $('#rbadge').classList.toggle('phone', fromLink);
   $('#rmeta').textContent = `${d.kind.label}의 ${d.app.label}, ${d.theme.label} 분위기, 주인공 ${d.char.label}(${d.voice.label}), ${d.level.label}, ${d.sound.label}, ${d.size.label}, ${d.fx.label}`;
   const stage = $('#stage');
@@ -110,14 +110,14 @@ function showResult() {
   destroyApp = TEMPLATES[S.app](stage, ctx);
   $('#tweak').hidden = true;
   history.replaceState(null, '', location.pathname + buildQuery(S));
-  document.title = `${d.name} - 바이브코딩 맛보기`;
+  document.title = `${d.name} - 상상을 앱으로`;
 }
 $('#aQr').addEventListener('click', () => showQr(S));
 $('#aPrompt').addEventListener('click', () => showPrompt(S));
 $('#aHome').addEventListener('click', () => {
   if (destroyApp) { destroyApp(); destroyApp = null; }
   S = fresh();
-  step = 0; fromLink = false; history.replaceState(null, '', location.pathname); document.title = '바이브코딩 맛보기 - 고르기만 하면 AI가 앱을 뚝딱';
+  step = 0; fromLink = false; history.replaceState(null, '', location.pathname); document.title = '상상을 앱으로 - 바이브코딩 공방';
   renderQuestion(); show('q');
 });
 $('#aTweak').addEventListener('click', () => { const p = $('#tweak'); p.hidden = !p.hidden; if (!p.hidden) { renderTweak(); p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } });
@@ -144,7 +144,7 @@ function renderTweak() {
         if (String(S[key]) === String(val)) return;
         if (key === 'kind') { S.kind = val; S.app = KINDS[val].apps[0]; }
         else S[key] = key === 'level' ? Number(val) : val;
-        toast(`"${label}만 ${o.label}(으)로 바꿔 줘" → 다시 만드는 중`);
+        toast(`"${label}만 ${o.label}(으)로 바꿔 줘" → 다시 빚는 중`);
         fromLink = false; startBuild(2600);
       });
       chips.appendChild(c);

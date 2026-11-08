@@ -178,7 +178,7 @@ export function codeFor(S) {
   return [...head, ...SNIPPETS[S.app](d), ...tail].join('\n');
 }
 
-const STATUS = ['요청을 읽고 있어요', '앱 구조를 잡는 중', '분위기(테마) 입히는 중', '주인공을 불러오는 중', '동작 코드를 쓰는 중', '마무리 점검 중'];
+const STATUS = ['설계를 읽고 있어요', '앱의 뼈대를 세우는 중', '분위기(테마)를 입히는 중', '주인공을 불러오는 중', '동작 코드를 빚는 중', '마무리 다듬는 중'];
 
 // duration: 전체 연출 시간(ms). 반환: 끝나면 resolve. skip()으로 즉시 종료 가능.
 export function runBuild(S, { duration = 5200, onDone }) {
@@ -199,7 +199,7 @@ export function runBuild(S, { duration = 5200, onDone }) {
     pre.textContent = code; bar.style.transform = 'scaleX(1)'; tab.textContent = code.split('\n').length + ' 줄';
     paint(1);
     const f = document.createElement('div'); f.className = 'done-flash'; f.textContent = '완성'; prev.appendChild(f);
-    status.textContent = '완성! 앱을 여는 중…';
+    status.textContent = '다 빚었어요! 앱을 여는 중…';
     setTimeout(() => onDone && onDone(), 650);
   };
   const paint = (p) => {

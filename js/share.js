@@ -29,7 +29,7 @@ export function showQr(S) {
   const copy = el('button', 'btn primary', '링크 복사');
   copy.onclick = async () => toast(await copyText(url) ? '링크를 복사했어요' : '복사가 막혔어요. 주소를 길게 눌러 복사하세요');
   row.appendChild(copy);
-  if (navigator.share) { const sh = el('button', 'btn', '공유하기'); sh.onclick = () => navigator.share({ title: '바이브코딩 맛보기', url }).catch(() => {}); row.appendChild(sh); }
+  if (navigator.share) { const sh = el('button', 'btn', '공유하기'); sh.onclick = () => navigator.share({ title: '상상을 앱으로 - 바이브코딩 공방', url }).catch(() => {}); row.appendChild(sh); }
   s.appendChild(row);
 }
 
