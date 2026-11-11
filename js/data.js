@@ -1,10 +1,10 @@
 // 선택지·테마·캐릭터·난이도 데이터. 사용자 입력이 아닌 고정 데이터만 둔다.
 
 export const KINDS = {
-  play:  { label: '놀이', emoji: '🎮', sub: '게임으로 신나게',     apps: ['reaction', 'dodge', 'memory', 'mole'] },
-  study: { label: '공부', emoji: '📚', sub: '배우면서 재미있게',   apps: ['quiz', 'typing', 'flash', 'math'] },
-  tool:  { label: '업무', emoji: '🧰', sub: '교실과 사무실에서 바로 쓰는', apps: ['timer', 'picker', 'groups', 'checklist'] },
-  art:   { label: '예술', emoji: '🎨', sub: '만들고 연주하는',     apps: ['paint', 'piano', 'beat', 'pixel'] },
+  play:  { label: '놀이', emoji: '🎮', sub: '반응속도 · 피하기 · 짝 맞추기 · 두더지', apps: ['reaction', 'dodge', 'memory', 'mole'] },
+  study: { label: '공부', emoji: '📚', sub: '퀴즈 · 타자 · 낱말 카드 · 암산', apps: ['quiz', 'typing', 'flash', 'math'] },
+  tool:  { label: '업무', emoji: '🧰', sub: '타이머 · 뽑기 · 모둠 짜기 · 체크리스트', apps: ['timer', 'picker', 'groups', 'checklist'] },
+  art:   { label: '예술', emoji: '🎨', sub: '그림판 · 피아노 · 비트 · 픽셀 아트', apps: ['paint', 'piano', 'beat', 'pixel'] },
 };
 
 export const APPS = {

@@ -4,9 +4,12 @@ import { $, $$, el, html, rng, newSeed, sanitizeName, isBanned, parseParams, bui
 import { runBuild } from './build.js';
 import { showQr, showPrompt, initModal, closeModal } from './share.js';
 import { TEMPLATES } from './templates/index.js';
+import { mountMascots, hopMascot } from './mascot.js';
+
+const CHEERS = ['', '좋아요, 이제 어떤 앱인지 골라요', '멋진 선택이에요!', '점점 모양이 잡혀 가요', '주인공이 생겼어요!', '벌써 절반 왔어요', '잘하고 있어요!', '거의 다 왔어요', '이제 하나만 더!', '마지막이에요. 이름을 지어 주세요'];
 
 const QUESTIONS = [
-  { key: 'kind', title: '무엇을 만들까요?', sub: '오늘 만들 앱의 큰 방향이에요.', options: () => Object.entries(KINDS) },
+  { key: 'kind', title: '무엇을 만들까요?', sub: '먼저 큰 갈래부터 골라요. 어떤 앱인지는 바로 다음에 정해요.', options: () => Object.entries(KINDS) },
   { key: 'app', title: '어떤 앱이 좋아요?', sub: '넷 중 하나를 고르거나, AI에게 맡겨도 돼요.', options: S => KINDS[S.kind].apps.map(a => [a, APPS[a]]), ai: true },
   { key: 'theme', title: '어떤 분위기로 할까요?', sub: '색깔·배경·장식 효과가 바뀌어요.', options: () => Object.entries(THEMES) },
   { key: 'char', title: '주인공은 누구?', sub: '앱 안에서 응원해 주는 캐릭터예요.', options: () => Object.entries(CHARS) },
@@ -32,6 +35,8 @@ function renderSteps() {
 function renderQuestion() {
   const q = QUESTIONS[step];
   $('#hero').style.display = step === 0 ? '' : 'none';
+  $('#guide').hidden = step === 0; $('#guideSay').textContent = CHEERS[step] || '';
+  if (step > 0) hopMascot($('#masGuide'));
   $('#qtitle').textContent = q.title; $('#qsub').textContent = q.sub;
   $('#back').style.visibility = step === 0 ? 'hidden' : '';
   const opts = $('#opts'); html(opts, '');
@@ -42,8 +47,8 @@ function renderQuestion() {
     $('#qhint').textContent = '글자·숫자·♥★!? 만 쓸 수 있어요. Enter를 눌러도 만들어져요.';
     setTimeout(() => inp.focus(), 50);
   } else {
-    opts.hidden = false; nameRow.hidden = true; $('#qhint').textContent = '키보드 A, B, C, D 또는 1에서 4로도 고를 수 있어요.';
-    if (q.ai) { const ai = el('button', 'btn ghost', '못 고르겠어요, AI가 골라 주세요'); ai.id = 'aiPick'; ai.addEventListener('click', () => choose('__ai')); $('#qhint').before(ai); }
+    opts.hidden = false; nameRow.hidden = true; $('#qhint').textContent = '키보드 A–D 또는 1–4로도 고를 수 있어요.';
+    if (q.ai) { const ai = el('button', 'btn ghost', '고르기 어려우면 AI에게 맡겨요'); ai.id = 'aiPick'; ai.addEventListener('click', () => choose('__ai')); $('#qhint').before(ai); }
     $$('#aiPick').forEach((b, i) => { if (!q.ai || i > 0) b.remove(); });
     q.options(S).forEach(([val, o], i) => {
       const b = el('button', 'opt' + (o.ai ? ' ai' : ''));
@@ -100,7 +105,7 @@ function showResult() {
   const d = describe(S);
   show('result');
   $('#rtitle').textContent = d.name;
-  $('#rbadge').textContent = fromLink ? '내 폰에서 열렸어요' : '공방에서 나왔습니다';
+  $('#rbadge').textContent = fromLink ? '내 폰에서 열렸어요' : '완성';
   $('#rbadge').classList.toggle('phone', fromLink);
   $('#rmeta').textContent = `${d.kind.label}의 ${d.app.label}, ${d.theme.label} 분위기, 주인공 ${d.char.label}(${d.voice.label}), ${d.level.label}, ${d.sound.label}, ${d.size.label}, ${d.fx.label}`;
   const stage = $('#stage');
@@ -161,6 +166,7 @@ function renderTweak() {
 }
 
 // ---------- 시작 ----------
+mountMascots();
 initModal();
 const fromUrl = parseParams(location.search);
 if (fromUrl) { S = fromUrl; fromLink = true; step = QUESTIONS.length; renderSteps(); startBuild(2200); }

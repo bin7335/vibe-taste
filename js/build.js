@@ -1,5 +1,6 @@
 // "AI가 코딩하는 중" 연출: 왼쪽 코드 타이핑 + 오른쪽 미리보기 조립
 import { $, $$, describe, wait } from './util.js';
+import { setMascot } from './mascot.js';
 
 const SNIPPETS = {
   reaction: d => [
@@ -178,30 +179,81 @@ export function codeFor(S) {
   return [...head, ...SNIPPETS[S.app](d), ...tail].join('\n');
 }
 
-const STATUS = ['설계를 읽고 있어요', '앱의 뼈대를 세우는 중', '분위기(테마)를 입히는 중', '주인공을 불러오는 중', '동작 코드를 빚는 중', '마무리 다듬는 중'];
+const STATUS = ['요청을 읽고 있어요', '앱의 뼈대를 세우고 있어요', '분위기를 입히고 있어요', '주인공을 불러오고 있어요', '움직이는 코드를 쓰고 있어요', '마지막으로 점검하고 있어요'];
 
-// duration: 전체 연출 시간(ms). 반환: 끝나면 resolve. skip()으로 즉시 종료 가능.
+// 코드 한 줄을 색칠해 span으로 만든다(textContent만 사용).
+const TOKEN = /(\/\/.*$)|("(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`|'(?:[^'\\]|\\.)*')|\b(const|let|import|from|new|if|return|function|for|of|else|await)\b|\b(\d+(?:\.\d+)?)\b/g;
+function paintCode(parent, text) {
+  let last = 0, m; TOKEN.lastIndex = 0;
+  const put = (t, cls) => { if (!t) return; const n = document.createElement('span'); if (cls) n.className = cls; n.textContent = t; parent.appendChild(n); };
+  while ((m = TOKEN.exec(text))) {
+    put(text.slice(last, m.index));
+    put(m[0], m[1] ? 'c-cm' : m[2] ? 'c-st' : m[3] ? 'c-kw' : 'c-nu');
+    last = m.index + m[0].length;
+  }
+  put(text.slice(last));
+}
+
+// 터미널에 흘러갈 대본: 요청 입력 → 읽기 → 코드 쓰기(줄마다) → 테스트 → 완성
+function scriptFor(S, d) {
+  const lines = codeFor(S).split('\n').slice(1); // 첫 줄(요청 주석)은 프롬프트로 대신 보여 준다
+  const L = [];
+  const add = (kind, text, cost, extra) => L.push({ kind, text, cost, ...extra });
+  add('sys', '바이브코딩 공방 터미널 · AI 준비 완료', 0);
+  add('prompt', `${d.theme.label} 분위기의 ${d.app.label} 만들어 줘. 주인공은 ${d.char.label}, 이름은 "${d.name}"`, 12);
+  add('step', '요청 읽기', 3);
+  add('sub', `${d.app.label} · ${d.theme.label} 분위기 · ${d.char.label} · ${d.level.label}`, 2);
+  add('step', '코드 쓰기  app.js', 2);
+  lines.forEach((t, i) => add('code', t, 1, { n: i + 1 }));
+  add('sub', `app.js에 ${lines.length}줄을 썼어요`, 2);
+  add('step', '테스트 돌리기', 3);
+  add('ok', '화면이 잘 열려요', 2);
+  add('ok', '버튼이 잘 눌려요', 2);
+  add('ok', '스마트폰에서도 딱 맞아요', 2);
+  add('done', `완성! "${d.name}"`, 3);
+  let at = 0; L.forEach(l => { l.at = at; at += l.cost; });
+  return { L, total: at, codeLines: lines.length };
+}
+
+// duration: 전체 연출 시간(ms). skip()으로 즉시 종료 가능.
 export function runBuild(S, { duration = 5200, onDone }) {
   const d = describe(S);
-  const code = codeFor(S);
-  const pre = $('#code'), bar = $('#bbar'), status = $('#bstatus'), tab = $('#btab'), prev = $('#preview');
+  const { L, total, codeLines } = scriptFor(S, d);
+  const pre = $('#code'), bar = $('#bbar'), status = $('#bstatus'), tab = $('#btab'), prev = $('#preview'), mas = $('#masBuild');
   const sk = [$('#sk1'), $('#sk2'), $('#sk3'), $('#sk4')];
   sk.forEach(s => s.classList.remove('in'));
   prev.style.removeProperty('--p-bg'); prev.style.removeProperty('--p-ink');
   $('.sk-char .em', prev).textContent = '';
   $$('.done-flash', prev).forEach(e => e.remove());
   pre.textContent = ''; bar.style.transform = 'scaleX(0)'; status.textContent = STATUS[0];
+  setMascot(mas, 'type');
 
-  let raf = 0, done = false, start = 0, lastStage = -1; // 백그라운드 탭에서도 진행되게 rAF 대신 setInterval
-  const total = code.length;
-  const finish = () => {
-    if (done) return; done = true; clearInterval(raf);
-    pre.textContent = code; bar.style.transform = 'scaleX(1)'; tab.textContent = code.split('\n').length + ' 줄';
-    paint(1);
-    const f = document.createElement('div'); f.className = 'done-flash'; f.textContent = '완성'; prev.appendChild(f);
-    status.textContent = '다 빚었어요! 앱을 여는 중…';
-    setTimeout(() => onDone && onDone(), 650);
+  const cur = document.createElement('span'); cur.className = 'cur';
+  let shown = 0, written = 0, typing = null, lastStep = null;
+  const span = (cls, text) => { const n = document.createElement('span'); if (cls) n.className = cls; n.textContent = text; return n; };
+  const append = (l) => {
+    const row = document.createElement('div'); row.className = 'tl tl--' + l.kind;
+    if (l.kind === 'prompt') { const t = span('', ''); row.append(span('tl__g', '> '), t); typing = { l, t }; }
+    else if (l.kind === 'step') { if (lastStep) lastStep.classList.add('is-done'); const ic = document.createElement('i'); ic.className = 'tl__ic'; row.append(ic, span('', l.text)); lastStep = row; }
+    else if (l.kind === 'code') { row.appendChild(span('tl__n', String(l.n).padStart(3, ' ') + ' + ')); paintCode(row, l.text || ' '); written = l.n; }
+    else if (l.kind === 'ok') row.append(span('tl__ok', '  ✓ '), span('', l.text));
+    else if (l.kind === 'sub') row.textContent = '  └ ' + l.text;
+    else if (l.kind === 'done') { if (lastStep) lastStep.classList.add('is-done'); row.textContent = '✓ ' + l.text; }
+    else row.textContent = l.text;
+    pre.appendChild(row);
   };
+  const render = (t) => {
+    while (shown < L.length && L[shown].at <= t) append(L[shown++]);
+    if (typing) {
+      const { l, t: node } = typing; const k = l.cost ? Math.min(1, (t - l.at) / l.cost) : 1;
+      node.textContent = l.text.slice(0, Math.ceil(l.text.length * k));
+      if (k >= 1) typing = null;
+    }
+    const host = pre.lastElementChild; if (host) host.appendChild(cur);
+    pre.scrollTop = pre.scrollHeight;
+  };
+
+  let timer = 0, done = false, start = 0, lastStage = -1; // 백그라운드 탭에서도 진행되게 rAF 대신 setInterval
   const paint = (p) => {
     const stage = p >= 0.97 ? 4 : p >= 0.72 ? 3 : p >= 0.48 ? 2 : p >= 0.22 ? 1 : 0;
     if (stage === lastStage) return; lastStage = stage;
@@ -211,21 +263,30 @@ export function runBuild(S, { duration = 5200, onDone }) {
     if (stage >= 3) sk[2].classList.add('in');
     if (stage >= 4) sk[3].classList.add('in');
   };
+  const meter = (ms) => { tab.textContent = `${written}줄 · ${(ms / 1000).toFixed(1)}초`; };
+  const finish = () => {
+    if (done) return; done = true; clearInterval(timer);
+    render(total + 1); cur.remove(); pre.scrollTop = pre.scrollHeight;
+    bar.style.transform = 'scaleX(1)'; written = codeLines; meter(start ? performance.now() - start : 0);
+    paint(1); setMascot(mas, 'cheer');
+    const f = document.createElement('div'); f.className = 'done-flash'; f.textContent = '완성!'; prev.appendChild(f);
+    status.textContent = '다 만들었어요! 앱을 여는 중이에요';
+    setTimeout(() => onDone && onDone(), 650);
+  };
   const step = () => {
     if (done) return;
     const now = performance.now();
     if (!start) start = now;
     const p = Math.min(1, (now - start) / duration);
-    const n = Math.floor(total * p);
-    pre.textContent = code.slice(0, n);
-    const cur = document.createElement('span'); cur.className = 'cur'; pre.appendChild(cur);
+    render(total * p);
     bar.style.transform = `scaleX(${p.toFixed(3)})`;
-    tab.textContent = code.slice(0, n).split('\n').length + ' 줄';
+    meter(now - start);
     paint(p);
     if (p >= 1) return finish();
   };
-  raf = setInterval(step, 33);
-  return { skip: finish, cancel: () => { done = true; clearInterval(raf); } };
+  render(0.01);
+  timer = setInterval(step, 33);
+  return { skip: finish, cancel: () => { done = true; clearInterval(timer); } };
 }
 
 // 교사용: 실제 AI에게 시킬 때 쓰는 프롬프트

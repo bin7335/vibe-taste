@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>상상을 앱으로 - 바이브코딩 공방</title>
-<meta name="description" content="바이브코딩을 2분 만에 체험하는 박람회용 데모. 무엇을 만들지, 분위기, 주인공, 속도를 보기 중에 고르고 이름만 지으면 AI가 코드를 짜는 장면과 함께 나만의 앱(게임·퀴즈·타이머·그림판 등 8종)이 완성됩니다. QR로 내 폰에 가져가기, 하나만 바꿔 다시 만들기, 진짜 AI에게 시키는 프롬프트 보기까지. 인터넷 없이 동작.">
+<meta name="description" content="열 가지를 고르면 AI가 앱을 짜는 과정을 지켜보고, 2분 뒤 직접 써 볼 수 있습니다. 게임·퀴즈·타이머·그림판 등 16종. QR로 폰에 담아 가고, 실제 AI용 프롬프트도 확인하세요. 오프라인 동작.">
 <link rel="stylesheet" href="css/app.css">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
@@ -12,7 +12,7 @@
 <meta name="theme-color" content="#1a1d2b">
 <meta property="og:type" content="website">
 <meta property="og:title" content="상상을 앱으로 - 바이브코딩 공방">
-<meta property="og:description" content="열 번의 선택으로 나만의 앱을 설계합니다. 교육 박람회 바이브코딩 공방">
+<meta property="og:description" content="만들고 싶은 앱을 골라 보세요. 코딩은 AI가 해 줘요. 교육 박람회 바이브코딩 공방">
 <meta property="og:image" content="https://bin7335.github.io/vibe-taste/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 </head>
@@ -29,9 +29,17 @@
 <main id="main" class="container">
   <section id="scr-q" class="screen on">
     <div class="hero" id="hero">
-      <h1>무엇을 만들지, 당신이 설계합니다.</h1>
-      <p class="lead">코드는 AI가 씁니다. 당신은 무엇을, 어떤 분위기로, 누구를 위해 만들지 열 번 고릅니다. 그 생각이 2분 뒤 나만의 앱이 됩니다.</p>
+      <div class="hello"><span data-mascot class="mas--wave"></span><p class="bubble">어서 오세요, 바이브코딩 공방이에요</p></div>
+      <h1>만들고 싶은 앱을<br>골라 보세요.</h1>
+      <p class="lead">코딩은 몰라도 괜찮아요. 종류, 분위기, 주인공을 차례로 고르면 AI가 코드를 써서 2분 만에 내 앱을 만들어 줘요.</p>
+      <ul class="facts" aria-label="체험 안내">
+        <li><b>10</b>번 고르기</li>
+        <li><b>2</b>분이면 완성</li>
+        <li>앱 <b>16</b>가지</li>
+        <li>설치·로그인 없이</li>
+      </ul>
     </div>
+    <div class="guide" id="guide" hidden><p class="bubble bubble--r" id="guideSay"></p><span data-mascot id="masGuide" class="mas--idle"></span></div>
     <div class="sheet">
       <div class="q__head">
         <h2 id="qtitle"></h2>
@@ -52,13 +60,14 @@
 
   <section id="scr-build" class="screen">
     <div class="build-head">
-      <h2>AI가 코드를 쓰는 중</h2>
+      <span data-mascot id="masBuild" class="mas--type"></span>
+      <h2>AI가 코드를 쓰고 있어요</h2>
       <p class="status" id="bstatus">요청을 읽고 있어요</p>
       <button class="btn" id="skip">건너뛰기</button>
       <div class="bar" role="progressbar" aria-label="진행"><i id="bbar"></i></div>
     </div>
     <div class="split">
-      <div class="editor"><div class="editor__bar"><span>app.js</span><span id="btab">0 줄</span></div><pre id="code"></pre></div>
+      <div class="editor"><div class="editor__bar"><span class="term__name"><i></i><i></i><i></i>AI 터미널</span><span id="btab">0줄</span></div><pre id="code" aria-label="AI가 코드를 쓰는 터미널 화면"></pre></div>
       <div class="preview" id="preview">
         <span class="lbl">미리보기</span>
         <div class="skel" id="skel">
@@ -73,22 +82,22 @@
 
   <section id="scr-result" class="screen">
     <div class="result-head">
-      <span class="badge" id="rbadge">완성</span>
+      <div class="hello"><span data-mascot id="masResult" class="mas--cheer"></span><span class="badge" id="rbadge">완성</span></div>
       <h2 id="rtitle"></h2>
       <p class="meta" id="rmeta"></p>
     </div>
     <div class="stage" id="stage"></div>
     <div class="actions">
-      <button class="btn" id="aQr">QR로 내 폰에<small>스마트폰으로 가져가기</small></button>
-      <button class="btn" id="aTweak">하나만 바꿔보기<small>"배경만 바꿔 줘"라고 말하는 체험</small></button>
-      <button class="btn" id="aPrompt">진짜 AI에게 시키려면<small>프롬프트 보기, 교사용</small></button>
-      <button class="btn" id="aHome">처음부터<small>새로 만들기</small></button>
+      <button class="btn" id="aQr">폰으로 가져가기<small>QR 찍으면 바로 열려요</small></button>
+      <button class="btn" id="aTweak">하나만 바꾸기<small>한 가지만 고쳐 다시 만들기</small></button>
+      <button class="btn" id="aPrompt">프롬프트 보기<small>실제 AI에 그대로 붙여 넣기</small></button>
+      <button class="btn" id="aHome">새로 만들기<small>처음부터 다시 고르기</small></button>
     </div>
     <div class="well" id="tweak" hidden>
-      <h3>하나만 바꿔서 다시 만들기 <small>진짜 바이브코딩에서 "배경을 바다로 바꿔 줘"라고 말하는 것과 같아요</small></h3>
+      <h3>하나만 바꿔 다시 만들기 <small>실제로는 "배경을 바다로 바꿔 줘" 한마디면 돼요</small></h3>
       <div class="tw" id="twBody"></div>
     </div>
-    <p class="note">방금 고른 것들을 코드 대신 <mark>말로 설명하면 AI가 앱을 만들어 주는 것</mark>, 그게 바이브코딩이에요. 마음에 안 들면 "더 빠르게", "주인공을 공룡으로"처럼 다시 말하면 됩니다. 실제 프롬프트는 위 버튼에서 볼 수 있어요.</p>
+    <p class="note"><b>방금 한 게 바이브코딩이에요</b> 코드를 직접 쓰는 대신, 만들고 싶은 걸 말로 설명하면 AI가 대신 써 줘요. 방금 고른 열 가지가 바로 그 설명이었어요. 고치고 싶을 땐 "더 빠르게", "주인공을 공룡으로"처럼 다시 말하면 돼요.</p>
   </section>
 </main>
 
@@ -96,7 +105,7 @@
   <div class="sheet sheet--modal" id="sheet"></div>
 </div>
 <div id="toast" role="status"></div>
-<footer>교육 박람회 바이브코딩 공방 체험용. 서버도 로그인도 없고, 고른 값은 주소에만 담깁니다. <a href="https://github.com/bin7335/vibe-taste" rel="noopener" target="_blank">GitHub</a></footer>
+<footer>교육 박람회 바이브코딩 공방 · 서버도 로그인도 없어요. 고른 내용은 주소에만 남아요 · <a href="https://github.com/bin7335/vibe-taste" rel="noopener" target="_blank">GitHub</a></footer>
 
 <script type="module" src="js/main.js"></script>
 </body>
