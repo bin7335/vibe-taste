@@ -1,6 +1,6 @@
 // 자동 테스트: 로컬 정적 서버 + 헤드리스 크롬(CDP)
 // 실행: node tests/run.mjs   (저장소 루트에서, 크롬 필요)
-// 검사: 모듈 로드 오류 0, 외부 요청 0, 375px 가로 넘침 없음, 8개 앱 틀 전부 마운트·조작, URL 복원·시드 고정, 이름 필터·XSS, QR·프롬프트·바꿔보기
+// 검사: 모듈 로드 오류 0, 외부 요청 0, 375px 가로 넘침 없음, 앱 틀 전부 마운트·조작, URL 복원·시드 고정, 이름 필터·XSS, QR·프롬프트·바꿔보기
 import { spawn } from 'node:child_process';
 import http from 'node:http';
 import fs from 'node:fs';
@@ -87,7 +87,7 @@ await t('이름 필터: 금지어 거부·특수문자 제거·12자 제한', as
 const CASES = [
   ['reaction', 'space', 'robot', 4], ['dodge', 'sea', 'cat', 2], ['memory', 'forest', 'dino', 3], ['mole', 'candy', 'ghost', 4],
   ['quiz', 'forest', 'dino', 3], ['typing', 'candy', 'ghost', 1], ['flash', 'space', 'cat', 2], ['math', 'sea', 'robot', 4],
-  ['timer', 'space', 'cat', 4], ['picker', 'sea', 'robot', 1], ['groups', 'candy', 'dino', 2], ['checklist', 'forest', 'ghost', 3],
+  ['timer', 'space', 'cat', 4], ['ladder', 'sea', 'dino', 3], ['picker', 'sea', 'robot', 1], ['groups', 'candy', 'dino', 2], ['checklist', 'forest', 'ghost', 3],
   ['paint', 'forest', 'ghost', 2], ['piano', 'candy', 'dino', 3], ['beat', 'space', 'robot', 1], ['pixel', 'sea', 'cat', 4],
 ];
 for (const [a, th, c, d] of CASES) {
@@ -110,7 +110,7 @@ for (const [a, th, c, d] of CASES) {
 }
 await t('375px: 결과 화면(피하기·피아노) 가로 넘침 없음', async () => {
   await metrics(375, 812, true); const out = [];
-  for (const a of ['dodge', 'piano', 'paint', 'picker', 'beat', 'pixel', 'groups', 'mole']) { await load(`${ORIGIN}/?a=${a}&t=sea&c=cat&d=2&s=1`, 500); const w = await ev(`${H} VT.skip(); await wait(800); return document.documentElement.scrollWidth`); if (w > 380) throw new Error(a + ' scrollWidth ' + w); out.push(w); }
+  for (const a of ['dodge', 'piano', 'paint', 'picker', 'beat', 'pixel', 'groups', 'mole', 'ladder']) { await load(`${ORIGIN}/?a=${a}&t=sea&c=cat&d=2&s=1`, 500); const w = await ev(`${H} VT.skip(); await wait(800); return document.documentElement.scrollWidth`); if (w > 380) throw new Error(a + ' scrollWidth ' + w); out.push(w); }
   await metrics(1280, 720, false); return out.join(',');
 });
 await t('시드 고정: 같은 주소 → 같은 퀴즈 순서·이름', async () => {

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>상상을 앱으로 - 바이브코딩 공방</title>
-<meta name="description" content="열 가지를 고르면 AI가 앱을 짜는 과정을 지켜보고, 2분 뒤 직접 써 볼 수 있습니다. 게임·퀴즈·타이머·그림판 등 16종. QR로 폰에 담아 가고, 실제 AI용 프롬프트도 확인하세요. 오프라인 동작.">
+<meta name="description" content="열 가지를 고르면 AI가 앱을 짜는 과정을 지켜보고, 2분 뒤 직접 써 볼 수 있습니다. 게임·퀴즈·사다리타기·그림판 등 16종. QR로 폰에 담아 가고, 실제 AI용 프롬프트도 확인하세요. 오프라인 동작.">
 <link rel="stylesheet" href="css/app.css">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
@@ -30,7 +30,7 @@
   <section id="scr-q" class="screen on">
     <div class="hero" id="hero">
       <div class="hero__text">
-      <div class="hello"><span data-mascot class="mas--wave"></span><p class="bubble">어서 오세요, 바이브코딩 공방이에요</p></div>
+      <div class="hello"><span data-mascot id="masHero" class="mas--wave"></span><p class="bubble">어서 오세요, 바이브코딩 공방이에요</p></div>
       <h1>만들고 싶은 앱을<br>골라 보세요.</h1>
       <p class="lead">코딩은 몰라도 괜찮아요. 종류, 분위기, 주인공을 차례로 고르면 AI가 코드를 써서 2분 만에 내 앱을 만들어 줘요.</p>
       <ul class="facts" aria-label="체험 안내">
@@ -66,11 +66,10 @@
 
   <section id="scr-build" class="screen">
     <div class="build-head">
-      <span data-mascot id="masBuild" class="mas--type"></span>
       <h2>AI가 코드를 쓰고 있어요</h2>
       <p class="status" id="bstatus">요청을 읽고 있어요</p>
       <button class="btn" id="skip">건너뛰기</button>
-      <div class="bar" role="progressbar" aria-label="진행"><i id="bbar"></i></div>
+      <div class="track" id="btrack"><span data-mascot id="masBuild" class="mas--run"></span><div class="bar" role="progressbar" aria-label="진행"><i id="bbar"></i></div></div>
     </div>
     <div class="split">
       <div class="editor"><div class="editor__bar"><span class="term__name"><i></i><i></i><i></i>AI 터미널</span><span id="btab">0줄</span></div><pre id="code" aria-label="AI가 코드를 쓰는 터미널 화면"></pre><div class="term__todo" id="btodo" aria-hidden="true"></div><div class="term__foot"><span id="bact"></span><span id="btok">토큰 0</span></div></div>
@@ -113,7 +112,10 @@
   <div class="sheet sheet--modal" id="sheet"></div>
 </div>
 <div id="toast" role="status"></div>
-<footer>교육 박람회 바이브코딩 공방 · 서버도 로그인도 없어요. 고른 내용은 주소에만 남아요 · <a href="https://github.com/bin7335/vibe-taste" rel="noopener" target="_blank">GitHub</a></footer>
+<footer>
+  <p>교육 박람회 바이브코딩 공방 · 서버도 로그인도 없어요. 고른 내용은 주소에만 남아요 · <a href="https://github.com/bin7335/vibe-taste" rel="noopener" target="_blank">GitHub</a></p>
+  <p>Claude Code로 만든 비공식 체험용 앱이에요. 코드를 쓰는 장면은 미리 준비한 연출이고, Anthropic 공식 서비스가 아니에요.</p>
+</footer>
 
 <script type="module" src="js/main.js"></script>
 </body>

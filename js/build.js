@@ -56,6 +56,17 @@ const SNIPPETS = {
     `}`,
     `plus.onclick = () => total += 60;`,
   ],
+  ladder: d => [
+    `const seconds = ${[4, 2.8, 1.8, 1.1][d.S.level - 1]};  // ${d.level.label}`,
+    `const ladder = Array.from({ length: 9 }, () => randomRungs(names.length));`,
+    `function ride(col) {`,
+    `  for (const row of ladder) col += row[col] ? 1 : row[col - 1] ? -1 : 0;`,
+    `  return results[col];`,
+    `}`,
+    `start.onclick = () => names.forEach((name, i) => {`,
+    `  hero.climbDown(i, seconds).then(() => board.add(\`\${name} → \${ride(i)}\`));`,
+    `});`,
+  ],
   picker: d => [
     `const names = textarea.value.split("\\n").filter(Boolean);`,
     `function spin() {`,
@@ -201,7 +212,7 @@ export function paintCode(parent, text) {
 export function runBuild(S, { duration = 7000, onDone }) {
   const d = describe(S);
   const lines = codeFor(S).split('\n').slice(1); // 첫 줄(요청 주석)은 프롬프트로 대신 보여 준다
-  const pre = $('#code'), bar = $('#bbar'), status = $('#bstatus'), tab = $('#btab'), prev = $('#preview'), mas = $('#masBuild');
+  const pre = $('#code'), bar = $('#bbar'), status = $('#bstatus'), tab = $('#btab'), prev = $('#preview'), mas = $('#masBuild'), track = $('#btrack');
   const todoBox = $('#btodo'), act = $('#bact'), tok = $('#btok');
   const sk = [$('#sk1'), $('#sk2'), $('#sk3'), $('#sk4')];
   const em = $('.sk-char .em', prev), bub = $('.sk-char .bub', prev), keys = $$('#sk4 span'), waitMsg = $('#pvWait');
@@ -214,7 +225,7 @@ export function runBuild(S, { duration = 7000, onDone }) {
   const real = (n, text) => { if (n.classList.contains('is-real')) return; n.textContent = text; n.classList.add('is-real'); };
   $$('.done-flash', prev).forEach(e => e.remove());
   pre.textContent = ''; bar.style.transform = 'scaleX(0)';
-  setMascot(mas, 'type');
+  setMascot(mas, 'run'); track.style.setProperty('--p', '0');
 
   const span = (cls, text) => { const n = document.createElement('span'); if (cls) n.className = cls; n.textContent = text; return n; };
   const row = (cls) => { const r = document.createElement('div'); r.className = 'tl ' + cls; return r; };
@@ -290,7 +301,7 @@ export function runBuild(S, { duration = 7000, onDone }) {
   const finish = () => {
     if (done) return; done = true; clearInterval(timer);
     render(total + 1); cur.remove(); pre.scrollTop = pre.scrollHeight;
-    bar.style.transform = 'scaleX(1)'; meter(start ? performance.now() - start : 0, 1);
+    bar.style.transform = 'scaleX(1)'; track.style.setProperty('--p', '1'); meter(start ? performance.now() - start : 0, 1);
     setMascot(mas, 'cheer');
     const f = document.createElement('div'); f.className = 'done-flash'; f.textContent = '완성!'; prev.appendChild(f);
     status.textContent = '다 만들었어요! 앱을 여는 중이에요';
@@ -302,7 +313,7 @@ export function runBuild(S, { duration = 7000, onDone }) {
     if (!start) start = now;
     const p = Math.min(1, (now - start) / duration);
     render(total * p);
-    bar.style.transform = `scaleX(${p.toFixed(3)})`;
+    bar.style.transform = `scaleX(${p.toFixed(3)})`; track.style.setProperty('--p', p.toFixed(3));
     meter(now - start, p);
     if (p >= 1) return finish();
   };

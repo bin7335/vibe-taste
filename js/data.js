@@ -3,7 +3,7 @@
 export const KINDS = {
   play:  { label: '놀이', emoji: '🎮', sub: '반응속도 · 피하기 · 짝 맞추기 · 두더지', apps: ['reaction', 'dodge', 'memory', 'mole'] },
   study: { label: '공부', emoji: '📚', sub: '퀴즈 · 타자 · 낱말 카드 · 암산', apps: ['quiz', 'typing', 'flash', 'math'] },
-  tool:  { label: '업무', emoji: '🧰', sub: '타이머 · 뽑기 · 모둠 짜기 · 체크리스트', apps: ['timer', 'picker', 'groups', 'checklist'] },
+  tool:  { label: '업무', emoji: '🧰', sub: '사다리타기 · 뽑기 · 모둠 짜기 · 체크리스트', apps: ['ladder', 'picker', 'groups', 'checklist'], old: ['timer'] }, // old: 보기에서는 뺐지만 예전 QR로는 계속 열리는 앱
   art:   { label: '예술', emoji: '🎨', sub: '그림판 · 피아노 · 비트 · 픽셀 아트', apps: ['paint', 'piano', 'beat', 'pixel'] },
 };
 
@@ -13,6 +13,7 @@ export const APPS = {
   quiz:     { label: '퀴즈',          emoji: '❓', sub: '4지선다 퀴즈 대결' },
   typing:   { label: '타자 연습',     emoji: '⌨️', sub: '단어를 빨리 정확하게' },
   timer:    { label: '타이머',        emoji: '⏱️', sub: '수업·활동 시간 재기' },
+  ladder:   { label: '사다리타기',    emoji: '🎲', sub: '이름과 결과를 넣고 누가 걸릴지 정하기' },
   picker:   { label: '뽑기',          emoji: '🎰', sub: '발표자·순서 랜덤 뽑기' },
   paint:    { label: '그림판',        emoji: '🖌️', sub: '그리고 도장 찍기' },
   piano:    { label: '미니 피아노',   emoji: '🎹', sub: '연주하고 따라치기' },
@@ -123,13 +124,14 @@ export const SOUNDS = {
   soft: { label: '조용한 소리', sub: '작고 부드럽게', type: 'triangle', vol: 0.5 },
   none: { label: '소리 없음', sub: '교실에서 조용히', mute: true, vol: 0 },
 };
+// 주인공 이름(로보·냥이·다이노·부우)은 모두 받침이 없어서 조사를 '야·는·다'로 고정했다. 받침 있는 이름을 추가하면 여기도 고쳐야 한다.
 export const VOICES = {
   kind:  { label: '다정하게', sub: '"잘하고 있어, 천천히 해도 돼"',
-    lines: n => [`안녕, 나는 ${n}이야. 같이 해 볼까?`, '잘하고 있어, 천천히 해도 돼.', '오늘도 수고했어.'], cheer: n => `정말 멋지다! ${n}이 자랑스러워.`, sad: () => '괜찮아, 누구나 그래. 다시 해 보자.' },
+    lines: n => [`안녕, 나는 ${n}야. 같이 해 볼까?`, '잘하고 있어, 천천히 해도 돼.', '오늘도 수고했어.'], cheer: n => `정말 멋지다! ${n}는 네가 자랑스러워.`, sad: () => '괜찮아, 누구나 그래. 다시 해 보자.' },
   funny: { label: '장난스럽게', sub: '"에이, 그걸 틀려? 농담이야!"',
     lines: n => [`${n} 등장! 두구두구두구!`, '오오, 이 정도면 천재 아니야?', '내 점수보다 높네, 질투 난다.'], cheer: () => '우와아아! 전설이 탄생했다!', sad: () => '에이, 그걸 틀려? 농담이야, 한 번 더!' },
   coach: { label: '코치처럼', sub: '"집중! 한 번 더!"',
-    lines: n => [`코치 ${n}이다. 준비됐나?`, '집중! 호흡 고르고.', '좋아, 기록이 올라간다.'], cheer: () => '신기록! 이게 훈련의 힘이다!', sad: () => '실수는 기록이 된다. 한 번 더!' },
+    lines: n => [`코치 ${n}다. 준비됐나?`, '집중! 호흡 고르고.', '좋아, 기록이 올라간다.'], cheer: () => '신기록! 이게 훈련의 힘이다!', sad: () => '실수는 기록이 된다. 한 번 더!' },
   robot: { label: '로봇처럼', sub: '"삐빅. 정답 확률 97%"',
     lines: n => [`${n} 시스템 가동. 삐빅.`, '분석 중… 반응 속도 양호.', '데이터 저장 완료.'], cheer: () => '삐리릭! 최고 기록 갱신. 축하 프로토콜 실행.', sad: () => '오류 감지. 재시도를 권장함.' },
 };

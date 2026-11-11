@@ -7,6 +7,7 @@ import typing from './typing.js';
 import flash from './flash.js';
 import math from './math.js';
 import timer from './timer.js';
+import ladder from './ladder.js';
 import picker from './picker.js';
 import groups from './groups.js';
 import checklist from './checklist.js';
@@ -15,4 +16,4 @@ import piano from './piano.js';
 import beat from './beat.js';
 import pixel from './pixel.js';
 
-export const TEMPLATES = { reaction, dodge, memory, mole, quiz, typing, flash, math, timer, picker, groups, checklist, paint, piano, beat, pixel };
+export const TEMPLATES = { reaction, dodge, memory, mole, quiz, typing, flash, math, timer, picker, groups, checklist, paint, piano, beat, pixel, ladder };

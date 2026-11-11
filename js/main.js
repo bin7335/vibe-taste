@@ -4,7 +4,7 @@ import { $, $$, el, html, rng, newSeed, sanitizeName, isBanned, parseParams, bui
 import { runBuild } from './build.js';
 import { showQr, showPrompt, showCode, initModal, closeModal } from './share.js';
 import { TEMPLATES } from './templates/index.js';
-import { mountMascots, hopMascot } from './mascot.js';
+import { mountMascots, hopMascot, setMascot, antic, startAntics } from './mascot.js';
 
 const CHEERS = ['', '좋아요, 이제 어떤 앱인지 골라요', '멋진 선택이에요!', '점점 모양이 잡혀 가요', '주인공이 생겼어요!', '벌써 절반 왔어요', '잘하고 있어요!', '거의 다 왔어요', '이제 하나만 더!', '마지막이에요. 이름을 지어 주세요'];
 
@@ -32,7 +32,7 @@ function show(name) { Object.entries(screens).forEach(([k, s]) => s.classList.to
 // ---------- 첫 화면 시연 카드: 요청 한 줄이 앱이 되는 과정을 짧게 되풀이 ----------
 const DEMOS = [
   ['우주 분위기의 퀴즈 만들어 줘', '우주 로보의 퀴즈'],
-  ['바다 분위기 타이머, 주인공은 고양이', '냥이의 바다 타이머'],
+  ['바다 분위기 사다리타기, 주인공은 고양이', '냥이의 바다 사다리타기'],
   ['사탕 분위기 피아노, 장난스럽게', '사탕 유령 피아노'],
 ];
 const DEMO_STEPS = ['뼈대 세우기', '분위기 입히기', '주인공 부르기'];
@@ -144,7 +144,7 @@ $('#skip').addEventListener('click', () => build && build.skip());
 // ---------- 결과 ----------
 function showResult() {
   const d = describe(S);
-  show('result');
+  show('result'); cheerFor(2600);
   $('#rtitle').textContent = d.name;
   $('#rbadge').textContent = fromLink ? '내 폰에서 열렸어요' : '완성';
   $('#rbadge').classList.toggle('phone', fromLink);
@@ -208,8 +208,34 @@ function renderTweak() {
   nr.append(inp, ok); body.appendChild(nr);
 }
 
+// ---------- 캐릭터: 가만있지 못하고, 누르면 반응하고, 앱에서 나는 소리에도 반응한다 ----------
+const HELLO = '어서 오세요, 바이브코딩 공방이에요';
+const POKES = ['간지러워요!', '얼른 하나 골라 봐요!', '저는 코드 쓰는 게 제일 좋아요', '한 번 더 눌러도 돼요', '오늘은 뭘 만들 거예요?', '으악, 깜짝이야!'];
+const POKE_MOVES = ['spin', 'hop', 'squash', 'wiggle', 'dash'];
+let pokeN = 0, pokeT = 0, cheerT = 0;
+function poke(node, bubble, restore) {
+  antic(node, POKE_MOVES[pokeN % POKE_MOVES.length]); sfx.tap();
+  bubble.textContent = POKES[pokeN++ % POKES.length];
+  clearTimeout(pokeT); pokeT = setTimeout(() => { bubble.textContent = restore(); }, 2200);
+}
+function initMascots() {
+  mountMascots();
+  const hero = $('#masHero'), guide = $('#masGuide'), res = $('#masResult');
+  [hero, guide, res].forEach(m => startAntics(m));
+  hero.addEventListener('click', () => poke(hero, $('#hero .bubble'), () => HELLO));
+  guide.addEventListener('click', () => poke(guide, $('#guideSay'), () => CHEERS[step] || ''));
+  res.addEventListener('click', () => antic(res, POKE_MOVES[pokeN++ % POKE_MOVES.length]));
+  document.addEventListener('vt:sfx', e => { // 만든 앱에서 정답·오답·승리 소리가 나면 같이 반응
+    if (!screens.result.classList.contains('on')) return;
+    if (e.detail === 'ok') antic(res, 'spin');
+    else if (e.detail === 'no') antic(res, 'shake');
+    else if (e.detail === 'win') cheerFor(2600);
+  });
+}
+function cheerFor(ms) { const res = $('#masResult'); setMascot(res, 'cheer'); clearTimeout(cheerT); cheerT = setTimeout(() => setMascot(res, 'idle'), ms); }
+
 // ---------- 시작 ----------
-mountMascots();
+initMascots();
 initModal();
 const fromUrl = parseParams(location.search);
 if (fromUrl) { S = fromUrl; fromLink = true; step = QUESTIONS.length; renderSteps(); startBuild(2200); }

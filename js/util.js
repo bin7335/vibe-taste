@@ -51,7 +51,7 @@ export function parseParams(search) {
   const seed = clamp(parseInt(p.get('s'), 10) || newSeed(), 1, 2147483647);
   let name = sanitizeName(p.get('n'));
   if (isBanned(name)) name = '';
-  const kind = Object.keys(KINDS).find(k => KINDS[k].apps.includes(app));
+  const kind = Object.keys(KINDS).find(k => KINDS[k].apps.includes(app) || (KINDS[k].old || []).includes(app));
   const pickKey = (v, table, dflt) => (v in table ? v : dflt);
   return { kind, app, theme, char: ch, level, seed, name,
     sound: pickKey(p.get('so'), SOUNDS, 'bell'), voice: pickKey(p.get('v'), VOICES, 'kind'), size: pickKey(p.get('z'), SIZES, 'normal'), fx: pickKey(p.get('fx'), FXS, 'confetti') };
