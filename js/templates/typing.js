@@ -36,13 +36,21 @@ export default function mount(root, ctx) {
     word.innerHTML = ''; word.append(`${ok}단어 · 분당 ${wpm}단어`);
     f.say(ok >= 10 ? f.char.cheer : ok >= 5 ? '좋아, 점점 빨라지네!' : f.char.lines[2]); sfx.win();
   }
+  // 한글 IME는 마지막 글자가 '조합 중'일 때 value를 비워도 그 글자를 다시 끼워 넣는다.
+  // blur로 조합을 확정시킨 뒤 비우고, 다음 틱에 한 번 더 비우고 포커스를 돌려준다.
+  let resetting = false;
+  function clearInput() {
+    resetting = true;
+    input.blur(); input.value = '';
+    setTimeout(() => { input.value = ''; resetting = false; if (running) input.focus(); }, 0);
+  }
   input.addEventListener('input', () => {
-    if (!running) return;
+    if (!running || resetting) return;
     typed++;
     const target = words[idx % words.length];
     const v = input.value.trim();
     if (v === target) {
-      ok++; idx++; input.value = ''; sOk.set(ok); sfx.ok();
+      ok++; idx++; clearInput(); sOk.set(ok); sfx.ok();
       word.innerHTML = ''; const okEl = el('span', 'ok', '' + target); word.appendChild(okEl);
       setTimeout(show, 150);
       if (ok % 5 === 0) f.say(rng.pick(['5개 돌파!', f.char.lines[1], '손가락이 날아다닌다!']), 1500);
