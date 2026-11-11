@@ -1,7 +1,7 @@
 {
-  "name": "상상을 앱으로 - 바이브코딩 공방",
+  "name": "상상을 앱으로 - 안동ICT 바이브코딩 공방",
   "short_name": "상상을 앱으로",
-  "description": "만들고 싶은 앱을 고르면 AI가 코드를 써 주는 바이브코딩 공방 체험",
+  "description": "만들고 싶은 앱을 고르면 AI가 코드를 써 주는 안동ICT 바이브코딩 공방 체험",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

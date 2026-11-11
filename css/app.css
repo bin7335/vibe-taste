@@ -292,7 +292,10 @@ main { flex: 1; padding-block: var(--space-xl) var(--space-2xl); }
 #toast.on { opacity: 1; transform: translateX(-50%); }
 footer { padding: var(--space-md) var(--gutter); font-size: var(--text-sm); color: var(--color-muted); text-align: center; }
 footer a { color: var(--color-ink-2); }
-footer p + p { margin-top: var(--space-2xs); font-size: var(--text-xs); }
+footer p + p { margin-top: var(--space-2xs); }
+footer p:last-child { font-size: var(--text-xs); }
+footer .maker { margin-bottom: var(--space-sm); font-size: var(--text-xl); font-weight: 700; letter-spacing: var(--tracking-display); color: var(--color-ink); }
+footer .maker mark { padding: var(--space-3xs) var(--space-sm); border-radius: var(--space-xs); background: var(--color-accent); }
 
 /* helper mascot: an original booth character, drawn inline */
 :root { --color-code-kw: oklch(78% 0.13 300); --color-code-nu: oklch(80% 0.12 50); --color-code-dim: oklch(68% 0.02 255); --color-code-add: oklch(82% 0.15 152 / 0.09); }

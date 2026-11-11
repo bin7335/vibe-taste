@@ -165,7 +165,7 @@ $('#aCode').addEventListener('click', () => showCode(S));
 $('#aHome').addEventListener('click', () => {
   if (destroyApp) { destroyApp(); destroyApp = null; }
   S = fresh();
-  step = 0; fromLink = false; history.replaceState(null, '', location.pathname); document.title = '상상을 앱으로 - 바이브코딩 공방';
+  step = 0; fromLink = false; history.replaceState(null, '', location.pathname); document.title = '상상을 앱으로 - 안동ICT 바이브코딩 공방';
   renderQuestion(); show('q');
 });
 $('#aTweak').addEventListener('click', () => { const p = $('#tweak'); p.hidden = !p.hidden; if (!p.hidden) { renderTweak(); p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } });
@@ -209,7 +209,7 @@ function renderTweak() {
 }
 
 // ---------- 캐릭터: 가만있지 못하고, 누르면 반응하고, 앱에서 나는 소리에도 반응한다 ----------
-const HELLO = '어서 오세요, 바이브코딩 공방이에요';
+const HELLO = '어서 오세요, 안동ICT 바이브코딩 공방이에요';
 const POKES = ['간지러워요!', '얼른 하나 골라 봐요!', '저는 코드 쓰는 게 제일 좋아요', '한 번 더 눌러도 돼요', '오늘은 뭘 만들 거예요?', '으악, 깜짝이야!'];
 const POKE_MOVES = ['spin', 'hop', 'squash', 'wiggle', 'dash'];
 let pokeN = 0, pokeT = 0, cheerT = 0;

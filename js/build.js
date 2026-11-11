@@ -259,7 +259,7 @@ export function runBuild(S, { duration = 7000, onDone }) {
   const test = (name) => add(2.5, () => { const r = row('tl--test'); const ic = document.createElement('i'); ic.className = 'tl__ic'; r._ms = span('tl__dim', ''); r.append(span('', '  '), ic, span('', ' ' + name), r._ms); return r; },
     (r, k) => { if (k >= 1 && !r._ok) { r._ok = true; r.classList.add('is-done'); r._ms.textContent = `  ${8 + name.length * 3}ms`; } });
 
-  add(1, () => { const r = row('tl--banner'); r.append(span('tl__star', '✻ '), span('', '바이브코딩 공방 터미널'), span('tl__dim', '  AI 연결됨')); return r; });
+  add(1, () => { const r = row('tl--banner'); r.append(span('tl__star', '✻ '), span('', '안동ICT 바이브코딩 공방 터미널'), span('tl__dim', '  AI 연결됨')); return r; });
   const ask = `${d.theme.label} 분위기의 ${d.app.label} 만들어 줘. 주인공은 ${d.char.label}, 이름은 "${d.name}"`;
   add(12, () => { const r = row('tl--prompt'); r._t = span('', ''); r.append(span('tl__g', '> '), r._t); return r; }, (r, k) => { r._t.textContent = ask.slice(0, Math.ceil(ask.length * k)); });
   add(6, () => { const r = row('tl--think'); r._t = span('tl__shim', ''); r.append(span('tl__star', '✻ '), r._t); return r; },
