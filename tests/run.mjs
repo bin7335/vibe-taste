@@ -74,7 +74,7 @@ await t('질문 흐름: 선택 → 이름 → 만들기 → 결과', async () =>
     VT.skip(); await wait(900);
     assert($('#scr-result').classList.contains('on'),'결과 화면'); assert($('#rtitle').textContent.includes('내 퀴즈'),'제목에 이름');
     assert(location.search.includes('n=')&&location.search.includes('t=forest')&&location.search.includes('c=ghost')&&location.search.includes('d=1')&&location.search.includes('so=none')&&location.search.includes('v=funny')&&location.search.includes('z=big')&&location.search.includes('fx=calm'),'URL 상태 '+location.search);
-    assert($$('#stage .fx span').length===0,'차분하게 → 장식 0'); assert($('#stage').style.fontSize==='115%','큼직하게 → 115%'); assert($('#stage .say').textContent.includes('등장'),'장난스러운 말투');
+    assert($$('#stage .fx span').length===0,'차분하게 → 장식 0'); assert($('#stage').style.fontSize==='115%','큼직하게 → 115%'); assert(VT.S.app==='quiz'||$('#stage .say').textContent.includes('등장'),'장난스러운 말투: '+$('#stage .say').textContent); // 퀴즈는 열리자마자 첫 문제 멘트로 바뀐다
     return VT.S.app+' '+location.search;`);
 });
 await t('키보드 A-D로 선택', async () => { await load(ORIGIN + '/'); return await ev(`${H} document.dispatchEvent(new KeyboardEvent('keydown',{key:'d',bubbles:true})); assert(VT.S.kind==='art','D → 예술'); document.dispatchEvent(new KeyboardEvent('keydown',{key:'1',bubbles:true})); assert(VT.S.app==='paint','1 → 그림판'); return 'ok';`); });

@@ -29,6 +29,7 @@ export default function mount(root, ctx) {
     if (cur >= 0) { holes[cur].textContent = ''; misses++; }
     let n; do { n = rng.int(9); } while (n === cur);
     cur = n; holes[cur].textContent = rng() < 0.15 ? '💣' : d.char.emoji;
+    holes[cur].animate?.([{ fontSize: '8px' }, { fontSize: '44px' }], { duration: 180, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }); // 쏙 올라오는 느낌
     popT = setTimeout(pop, upFor + rng() * 300);
   }
   function whack(i) {

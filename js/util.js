@@ -83,11 +83,12 @@ export function beep(freq = 660, dur = 0.12, type = 'sine', vol = 0.08) {
 let profile = SOUNDS.bell;
 export function setSound(key) { profile = SOUNDS[key] || SOUNDS.bell; }
 const fx = (f, d, type, vol) => profile.mute ? null : beep(f, d, profile.type || type, vol * profile.vol);
+const ping = k => { try { document.dispatchEvent(new CustomEvent('vt:sfx', { detail: k })); } catch (e) {} }; // 앱 틀이 받아 화면 반응을 낸다
 export const sfx = {
   tap: () => fx(880, 0.06, 'square', 0.04),
-  ok: () => { fx(660, 0.1, 'sine', 0.08); setTimeout(() => fx(990, 0.14, 'sine', 0.08), 90); },
-  no: () => fx(180, 0.2, 'sawtooth', 0.06),
-  win: () => [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => fx(f, 0.18, 'sine', 0.08), i * 110)),
+  ok: () => { ping('ok'); fx(660, 0.1, 'sine', 0.08); setTimeout(() => fx(990, 0.14, 'sine', 0.08), 90); },
+  no: () => { ping('no'); return fx(180, 0.2, 'sawtooth', 0.06); },
+  win: () => { ping('win'); [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => fx(f, 0.18, 'sine', 0.08), i * 110)); },
   tick: () => fx(1200, 0.03, 'square', 0.02),
 };
 
@@ -113,4 +114,14 @@ export function describe(S) {
     sound: SOUNDS[S.sound] || SOUNDS.bell, voice: v, size: SIZES[S.size] || SIZES.normal, fx: FXS[S.fx] || FXS.confetti,
     name: S.name || defaultName(S),
   };
+}
+
+// 받침에 따라 조사를 고른다: josa('사탕', '으로/로') → '으로', josa('바다', '을/를') → '를'
+export function josa(word, pair) {
+  const [a, b] = pair.split('/');
+  const c = String(word).trim().slice(-1).charCodeAt(0);
+  if (!(c >= 0xac00 && c <= 0xd7a3)) return b;
+  const jong = (c - 0xac00) % 28;
+  if (pair === '으로/로') return jong === 0 || jong === 8 ? b : a;
+  return jong ? a : b;
 }

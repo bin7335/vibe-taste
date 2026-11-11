@@ -179,11 +179,13 @@ export function codeFor(S) {
   return [...head, ...SNIPPETS[S.app](d), ...tail].join('\n');
 }
 
-const STATUS = ['요청을 읽고 있어요', '앱의 뼈대를 세우고 있어요', '분위기를 입히고 있어요', '주인공을 불러오고 있어요', '움직이는 코드를 쓰고 있어요', '마지막으로 점검하고 있어요'];
+const STATUS = ['뼈대를 세우고 있어요', '분위기를 입히고 있어요', '주인공을 불러오고 있어요', '움직이는 코드를 쓰고 있어요', '잘 되는지 시험하고 있어요', '다 만들었어요!'];
+const TODO = ['뼈대 세우기', '분위기 입히기', '주인공 부르기', '동작 만들기', '테스트'];
+const THOUGHTS = ['어떤 앱인지 살펴보는 중', '필요한 화면을 떠올리는 중', '만드는 순서를 정하는 중'];
 
 // 코드 한 줄을 색칠해 span으로 만든다(textContent만 사용).
 const TOKEN = /(\/\/.*$)|("(?:[^"\\]|\\.)*"|`(?:[^`\\]|\\.)*`|'(?:[^'\\]|\\.)*')|\b(const|let|import|from|new|if|return|function|for|of|else|await)\b|\b(\d+(?:\.\d+)?)\b/g;
-function paintCode(parent, text) {
+export function paintCode(parent, text) {
   let last = 0, m; TOKEN.lastIndex = 0;
   const put = (t, cls) => { if (!t) return; const n = document.createElement('span'); if (cls) n.className = cls; n.textContent = t; parent.appendChild(n); };
   while ((m = TOKEN.exec(text))) {
@@ -194,98 +196,118 @@ function paintCode(parent, text) {
   put(text.slice(last));
 }
 
-// 터미널에 흘러갈 대본: 요청 입력 → 읽기 → 코드 쓰기(줄마다) → 테스트 → 완성
-function scriptFor(S, d) {
-  const lines = codeFor(S).split('\n').slice(1); // 첫 줄(요청 주석)은 프롬프트로 대신 보여 준다
-  const L = [];
-  const add = (kind, text, cost, extra) => L.push({ kind, text, cost, ...extra });
-  add('sys', '바이브코딩 공방 터미널 · AI 준비 완료', 0);
-  add('prompt', `${d.theme.label} 분위기의 ${d.app.label} 만들어 줘. 주인공은 ${d.char.label}, 이름은 "${d.name}"`, 12);
-  add('step', '요청 읽기', 3);
-  add('sub', `${d.app.label} · ${d.theme.label} 분위기 · ${d.char.label} · ${d.level.label}`, 2);
-  add('step', '코드 쓰기  app.js', 2);
-  lines.forEach((t, i) => add('code', t, 1, { n: i + 1 }));
-  add('sub', `app.js에 ${lines.length}줄을 썼어요`, 2);
-  add('step', '테스트 돌리기', 3);
-  add('ok', '화면이 잘 열려요', 2);
-  add('ok', '버튼이 잘 눌려요', 2);
-  add('ok', '스마트폰에서도 딱 맞아요', 2);
-  add('done', `완성! "${d.name}"`, 3);
-  let at = 0; L.forEach(l => { l.at = at; at += l.cost; });
-  return { L, total: at, codeLines: lines.length };
-}
-
 // duration: 전체 연출 시간(ms). skip()으로 즉시 종료 가능.
-export function runBuild(S, { duration = 5200, onDone }) {
+// 터미널 대본: 요청 입력 → 생각 → 뼈대 → 분위기 → 주인공 → 코드 쓰기(줄마다 타이핑) → 테스트 → 완성
+export function runBuild(S, { duration = 7000, onDone }) {
   const d = describe(S);
-  const { L, total, codeLines } = scriptFor(S, d);
+  const lines = codeFor(S).split('\n').slice(1); // 첫 줄(요청 주석)은 프롬프트로 대신 보여 준다
   const pre = $('#code'), bar = $('#bbar'), status = $('#bstatus'), tab = $('#btab'), prev = $('#preview'), mas = $('#masBuild');
+  const todoBox = $('#btodo'), act = $('#bact'), tok = $('#btok');
   const sk = [$('#sk1'), $('#sk2'), $('#sk3'), $('#sk4')];
+  const em = $('.sk-char .em', prev), bub = $('.sk-char .bub', prev), keys = $$('#sk4 span'), waitMsg = $('#pvWait');
+  const VARS = ['bg', 'ink', 'card', 'ac', 'muted'];
   sk.forEach(s => s.classList.remove('in'));
-  prev.style.removeProperty('--p-bg'); prev.style.removeProperty('--p-ink');
-  $('.sk-char .em', prev).textContent = '';
+  [sk[0], em, bub, sk[2], ...keys].forEach(n => n.classList.remove('is-real'));
+  [sk[0], em, bub, sk[2]].forEach(n => { n.textContent = ''; });
+  VARS.forEach(k => prev.style.removeProperty('--p-' + k));
+  prev.classList.remove('is-themed'); waitMsg.hidden = false;
+  const real = (n, text) => { if (n.classList.contains('is-real')) return; n.textContent = text; n.classList.add('is-real'); };
   $$('.done-flash', prev).forEach(e => e.remove());
-  pre.textContent = ''; bar.style.transform = 'scaleX(0)'; status.textContent = STATUS[0];
+  pre.textContent = ''; bar.style.transform = 'scaleX(0)';
   setMascot(mas, 'type');
 
-  const cur = document.createElement('span'); cur.className = 'cur';
-  let shown = 0, written = 0, typing = null, lastStep = null;
   const span = (cls, text) => { const n = document.createElement('span'); if (cls) n.className = cls; n.textContent = text; return n; };
-  const append = (l) => {
-    const row = document.createElement('div'); row.className = 'tl tl--' + l.kind;
-    if (l.kind === 'prompt') { const t = span('', ''); row.append(span('tl__g', '> '), t); typing = { l, t }; }
-    else if (l.kind === 'step') { if (lastStep) lastStep.classList.add('is-done'); const ic = document.createElement('i'); ic.className = 'tl__ic'; row.append(ic, span('', l.text)); lastStep = row; }
-    else if (l.kind === 'code') { row.appendChild(span('tl__n', String(l.n).padStart(3, ' ') + ' + ')); paintCode(row, l.text || ' '); written = l.n; }
-    else if (l.kind === 'ok') row.append(span('tl__ok', '  ✓ '), span('', l.text));
-    else if (l.kind === 'sub') row.textContent = '  └ ' + l.text;
-    else if (l.kind === 'done') { if (lastStep) lastStep.classList.add('is-done'); row.textContent = '✓ ' + l.text; }
-    else row.textContent = l.text;
-    pre.appendChild(row);
+  const row = (cls) => { const r = document.createElement('div'); r.className = 'tl ' + cls; return r; };
+
+  // 할 일 목록(터미널 아래 고정) + 미리보기 조립을 같은 단계로 묶는다
+  todoBox.textContent = '';
+  const todoEls = TODO.map(t => { const e = span('td', t); todoBox.appendChild(e); return e; });
+  const mile = (i) => {
+    todoEls.forEach((e, j) => { e.className = 'td' + (j < i ? ' is-done' : j === i ? ' is-cur' : ''); });
+    status.textContent = STATUS[Math.min(i, STATUS.length - 1)];
+    act.textContent = i < TODO.length ? `단계 ${i + 1}/${TODO.length} · ${TODO[i]}` : '완성';
+    if (i >= 1) { waitMsg.hidden = true; sk.forEach(s => s.classList.add('in')); }                  // 뼈대: 회색 틀
+    if (i >= 2) { VARS.forEach(k => prev.style.setProperty('--p-' + k, d.theme[k])); prev.classList.add('is-themed'); real(sk[0], d.name); } // 분위기: 색과 제목
+    if (i >= 3) { real(em, d.char.emoji); real(bub, d.char.lines[0]); }                                // 주인공: 얼굴과 첫 인사
+    if (i >= 4) real(sk[2], d.app.label);                                                              // 동작: 앱 본체
+    if (i >= 5) keys.forEach(k => k.classList.add('is-real'));                                         // 테스트 통과: 버튼
   };
+  mile(0);
+
+  let written = 0, lastStep = null;
+  const L = [];
+  const add = (cost, make, upd) => L.push({ cost, make, upd });
+  const closeStep = () => { if (lastStep) lastStep.classList.add('is-done'); };
+  const say = (cls, text, cost = 1.5) => add(cost, () => { const r = row(cls); r.textContent = text; return r; });
+  const step = (text, m) => add(2, () => { closeStep(); if (m != null) mile(m); const r = row('tl--step'); const ic = document.createElement('i'); ic.className = 'tl__ic'; r.append(ic, span('', text)); lastStep = r; return r; });
+  const file = (name) => add(1.5, () => { const r = row('tl--ok'); r.append(span('tl__ok', '  + '), span('', name)); return r; });
+  const gauge = (label) => add(5, () => {
+    const r = row('tl--bar'); const b = span('tbar', ''); const i = document.createElement('i'); b.appendChild(i);
+    const pct = span('tl__pct', '0%'); r.append(span('', '  ' + label + ' '), b, pct); r._i = i; r._p = pct; return r;
+  }, (r, k) => { const v = Math.round(k * 100); r._i.style.width = v + '%'; r._p.textContent = v + '%'; if (k >= 1) r.classList.add('is-done'); });
+  const test = (name) => add(2.5, () => { const r = row('tl--test'); const ic = document.createElement('i'); ic.className = 'tl__ic'; r._ms = span('tl__dim', ''); r.append(span('', '  '), ic, span('', ' ' + name), r._ms); return r; },
+    (r, k) => { if (k >= 1 && !r._ok) { r._ok = true; r.classList.add('is-done'); r._ms.textContent = `  ${8 + name.length * 3}ms`; } });
+
+  add(1, () => { const r = row('tl--banner'); r.append(span('tl__star', '✻ '), span('', '바이브코딩 공방 터미널'), span('tl__dim', '  AI 연결됨')); return r; });
+  const ask = `${d.theme.label} 분위기의 ${d.app.label} 만들어 줘. 주인공은 ${d.char.label}, 이름은 "${d.name}"`;
+  add(12, () => { const r = row('tl--prompt'); r._t = span('', ''); r.append(span('tl__g', '> '), r._t); return r; }, (r, k) => { r._t.textContent = ask.slice(0, Math.ceil(ask.length * k)); });
+  add(6, () => { const r = row('tl--think'); r._t = span('tl__shim', ''); r.append(span('tl__star', '✻ '), r._t); return r; },
+    (r, k) => { if (k >= 1) { r.classList.add('is-done'); r._t.textContent = '생각 끝! 만들 순서를 정했어요'; } else r._t.textContent = THOUGHTS[Math.min(2, Math.floor(k * 3))] + '…'; });
+  step('뼈대 세우기', 0);
+  file('index.html'); file('style.css'); file('app.js');
+  step('분위기 입히기', 1);
+  gauge(`${d.theme.label} 색과 배경`);
+  step('주인공 부르기', 2);
+  gauge(`${d.char.emoji} ${d.char.name} 데려오는 중`);
+  step('동작 만들기  app.js', 3);
+  lines.forEach((t, i) => add(1, () => row('tl--code'), (r, k) => {
+    r.textContent = ''; r.appendChild(span('tl__n', String(i + 1).padStart(3, ' ') + ' + '));
+    paintCode(r, t.slice(0, Math.ceil(t.length * k)) || ' '); written = Math.max(written, i + 1);
+  }));
+  say('tl--sub', `  └ app.js에 ${lines.length}줄을 썼어요`, 2);
+  step('테스트 돌리기', 4);
+  test('화면이 잘 열려요'); test('버튼이 잘 눌려요'); test('스마트폰에서도 딱 맞아요');
+  add(3, () => { closeStep(); mile(5); const r = row('tl--done'); r.textContent = `✓ 완성! "${d.name}"`; return r; });
+  say('tl--sub', `  파일 3개 · 코드 ${lines.length}줄 · 테스트 3/3 통과`, 2);
+
+  let total = 0; L.forEach(l => { l.at = total; total += l.cost; });
+  const tokens = Math.round(lines.join('\n').length * 0.7) + 240;
+
+  const cur = document.createElement('span'); cur.className = 'cur';
+  let shown = 0, active = null;
   const render = (t) => {
-    while (shown < L.length && L[shown].at <= t) append(L[shown++]);
-    if (typing) {
-      const { l, t: node } = typing; const k = l.cost ? Math.min(1, (t - l.at) / l.cost) : 1;
-      node.textContent = l.text.slice(0, Math.ceil(l.text.length * k));
-      if (k >= 1) typing = null;
+    while (shown < L.length && L[shown].at <= t) {
+      if (active && active.l.upd) active.l.upd(active.r, 1);
+      const l = L[shown++]; const r = l.make(); pre.appendChild(r); active = { l, r };
     }
-    const host = pre.lastElementChild; if (host) host.appendChild(cur);
+    if (active && active.l.upd) active.l.upd(active.r, Math.min(1, (t - active.l.at) / active.l.cost));
+    if (pre.lastElementChild) pre.lastElementChild.appendChild(cur);
     pre.scrollTop = pre.scrollHeight;
   };
 
-  let timer = 0, done = false, start = 0, lastStage = -1; // 백그라운드 탭에서도 진행되게 rAF 대신 setInterval
-  const paint = (p) => {
-    const stage = p >= 0.97 ? 4 : p >= 0.72 ? 3 : p >= 0.48 ? 2 : p >= 0.22 ? 1 : 0;
-    if (stage === lastStage) return; lastStage = stage;
-    status.textContent = STATUS[Math.min(stage + 1, STATUS.length - 1)];
-    if (stage >= 1) { prev.style.setProperty('--p-bg', d.theme.bg); prev.style.setProperty('--p-ink', d.theme.ink); sk[0].classList.add('in'); }
-    if (stage >= 2) { sk[1].classList.add('in'); $('.sk-char .em', prev).textContent = d.char.emoji; }
-    if (stage >= 3) sk[2].classList.add('in');
-    if (stage >= 4) sk[3].classList.add('in');
-  };
-  const meter = (ms) => { tab.textContent = `${written}줄 · ${(ms / 1000).toFixed(1)}초`; };
+  let timer = 0, done = false, start = 0; // 백그라운드 탭에서도 진행되게 rAF 대신 setInterval
+  const meter = (ms, p) => { tab.textContent = `${written}줄 · ${(ms / 1000).toFixed(1)}초`; tok.textContent = `토큰 ${Math.round(tokens * p).toLocaleString('ko-KR')}`; };
   const finish = () => {
     if (done) return; done = true; clearInterval(timer);
     render(total + 1); cur.remove(); pre.scrollTop = pre.scrollHeight;
-    bar.style.transform = 'scaleX(1)'; written = codeLines; meter(start ? performance.now() - start : 0);
-    paint(1); setMascot(mas, 'cheer');
+    bar.style.transform = 'scaleX(1)'; meter(start ? performance.now() - start : 0, 1);
+    setMascot(mas, 'cheer');
     const f = document.createElement('div'); f.className = 'done-flash'; f.textContent = '완성!'; prev.appendChild(f);
     status.textContent = '다 만들었어요! 앱을 여는 중이에요';
     setTimeout(() => onDone && onDone(), 650);
   };
-  const step = () => {
+  const tick = () => {
     if (done) return;
     const now = performance.now();
     if (!start) start = now;
     const p = Math.min(1, (now - start) / duration);
     render(total * p);
     bar.style.transform = `scaleX(${p.toFixed(3)})`;
-    meter(now - start);
-    paint(p);
+    meter(now - start, p);
     if (p >= 1) return finish();
   };
-  render(0.01);
-  timer = setInterval(step, 33);
+  render(0.5);
+  timer = setInterval(tick, 33);
   return { skip: finish, cancel: () => { done = true; clearInterval(timer); } };
 }
 

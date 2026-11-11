@@ -1,8 +1,8 @@
 // 흐름 제어: 질문(6개) → 코딩 연출 → 결과(앱 + QR/바꿔보기/프롬프트/처음부터)
 import { KINDS, APPS, THEMES, CHARS, LEVELS, SOUNDS, VOICES, SIZES, FXS } from './data.js';
-import { $, $$, el, html, rng, newSeed, sanitizeName, isBanned, parseParams, buildQuery, describe, sfx, setSound, toast } from './util.js';
+import { $, $$, el, html, rng, newSeed, sanitizeName, isBanned, parseParams, buildQuery, describe, sfx, setSound, toast, josa } from './util.js';
 import { runBuild } from './build.js';
-import { showQr, showPrompt, initModal, closeModal } from './share.js';
+import { showQr, showPrompt, showCode, initModal, closeModal } from './share.js';
 import { TEMPLATES } from './templates/index.js';
 import { mountMascots, hopMascot } from './mascot.js';
 
@@ -23,10 +23,40 @@ const QUESTIONS = [
 
 const fresh = () => ({ kind: null, app: null, theme: null, char: null, voice: null, level: null, sound: null, size: null, fx: null, name: '', seed: newSeed() });
 let S = fresh();
-let step = 0, build = null, destroyApp = null, fromLink = false;
+let step = 0, shownStep = 0, build = null, destroyApp = null, fromLink = false;
+const TOUCH = matchMedia('(hover: none)').matches;
 
 const screens = { q: $('#scr-q'), build: $('#scr-build'), result: $('#scr-result') };
 function show(name) { Object.entries(screens).forEach(([k, s]) => s.classList.toggle('on', k === name)); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+// ---------- 첫 화면 시연 카드: 요청 한 줄이 앱이 되는 과정을 짧게 되풀이 ----------
+const DEMOS = [
+  ['우주 분위기의 퀴즈 만들어 줘', '우주 로보의 퀴즈'],
+  ['바다 분위기 타이머, 주인공은 고양이', '냥이의 바다 타이머'],
+  ['사탕 분위기 피아노, 장난스럽게', '사탕 유령 피아노'],
+];
+const DEMO_STEPS = ['뼈대 세우기', '분위기 입히기', '주인공 부르기'];
+let demoT = 0, demoI = 0;
+function stopDemo() { clearTimeout(demoT); demoT = 0; }
+function playDemo() {
+  stopDemo();
+  const box = $('#demo'); if (!box) return;
+  const [ask, name] = DEMOS[demoI++ % DEMOS.length];
+  html(box, '');
+  const line = (cls) => { const r = el('div', 'tl ' + cls); box.appendChild(r); return r; };
+  const t = el('span'), cur = el('span', 'cur');
+  line('tl--prompt').append(el('span', 'tl__g', '> '), t, cur);
+  const okLine = (text) => line('tl--ok').append(el('span', 'tl__ok', '✓ '), el('span', '', text));
+  const doneLine = () => { cur.remove(); line('tl--done').textContent = `✓ 완성! "${name}"`; };
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { t.textContent = ask; DEMO_STEPS.forEach(okLine); doneLine(); return; }
+  let n = 0, k = 0;
+  const next = () => {
+    if (k < DEMO_STEPS.length) { okLine(DEMO_STEPS[k++]); demoT = setTimeout(next, 420); }
+    else { doneLine(); demoT = setTimeout(playDemo, 2600); }
+  };
+  const type = () => { t.textContent = ask.slice(0, ++n); demoT = setTimeout(n < ask.length ? type : next, n < ask.length ? 55 : 350); };
+  type();
+}
 
 // ---------- 질문 ----------
 function renderSteps() {
@@ -34,6 +64,9 @@ function renderSteps() {
 }
 function renderQuestion() {
   const q = QUESTIONS[step];
+  const hadFocus = $('#opts').contains(document.activeElement);
+  const head = $('.q__head'); head.classList.remove('swap'); void head.offsetWidth; head.classList.add('swap');
+  if (step === 0) { if (!demoT) playDemo(); } else stopDemo();
   $('#hero').style.display = step === 0 ? '' : 'none';
   $('#guide').hidden = step === 0; $('#guideSay').textContent = CHEERS[step] || '';
   if (step > 0) hopMascot($('#masGuide'));
@@ -44,10 +77,10 @@ function renderQuestion() {
   if (q.text) {
     opts.hidden = true; nameRow.hidden = false;
     const inp = $('#nameIn'); inp.value = S.name || ''; inp.placeholder = '예: ' + describe(S).name;
-    $('#qhint').textContent = '글자·숫자·♥★!? 만 쓸 수 있어요. Enter를 눌러도 만들어져요.';
+    $('#qhint').textContent = '글자·숫자·♥★!? 만 쓸 수 있어요.' + (TOUCH ? '' : ' Enter를 눌러도 만들어져요.');
     setTimeout(() => inp.focus(), 50);
   } else {
-    opts.hidden = false; nameRow.hidden = true; $('#qhint').textContent = '키보드 A–D 또는 1–4로도 고를 수 있어요.';
+    opts.hidden = false; nameRow.hidden = true; const n = q.options(S).length; $('#qhint').textContent = TOUCH ? '' : `키보드 A–${'ABCD'[n - 1]} 또는 1–${n}로도 고를 수 있어요.`;
     if (q.ai) { const ai = el('button', 'btn ghost', '고르기 어려우면 AI에게 맡겨요'); ai.id = 'aiPick'; ai.addEventListener('click', () => choose('__ai')); $('#qhint').before(ai); }
     $$('#aiPick').forEach((b, i) => { if (!q.ai || i > 0) b.remove(); });
     q.options(S).forEach(([val, o], i) => {
@@ -58,21 +91,29 @@ function renderQuestion() {
       body.appendChild(el('b', '', o.label));
       if (o.sub) body.appendChild(el('small', '', o.sub));
       b.appendChild(body);
+      b.style.setProperty('--i', i);
+      if (q.key === 'theme') { const sw = el('span', 'opt__sw'), dot = el('i'); sw.style.background = o.bg; dot.style.background = o.ac; sw.appendChild(dot); b.appendChild(sw); }
+      if (q.key === 'char') b.appendChild(el('span', 'opt__pic', o.emoji));
       b.addEventListener('click', () => choose(val));
       opts.appendChild(b);
     });
   }
   const picked = $('#picked'); html(picked, '');
   const d = { kind: S.kind && KINDS[S.kind], app: S.app && APPS[S.app], theme: S.theme && THEMES[S.theme], char: S.char && CHARS[S.char], voice: S.voice && VOICES[S.voice], level: S.level && LEVELS[S.level], sound: S.sound && SOUNDS[S.sound], size: S.size && SIZES[S.size], fx: S.fx && FXS[S.fx] };
-  Object.values(d).filter(Boolean).forEach(o => picked.appendChild(el('span', '', o.label)));
+  const chips = Object.values(d).filter(Boolean).map(o => picked.appendChild(el('span', '', o.label)));
+  if (step > shownStep && chips.length) chips[chips.length - 1].classList.add('new');
+  shownStep = step;
   renderSteps();
+  if (hadFocus && !q.text) $('#opts .opt')?.focus({ preventScroll: true });
 }
 function choose(val) {
   const q = QUESTIONS[step]; sfx.tap();
-  if (q.key === 'app' && val === '__ai') { val = KINDS[S.kind].apps[Math.floor(Math.random() * KINDS[S.kind].apps.length)]; toast(`AI 추천: ${APPS[val].label}`); }
+  if (q.key === 'app' && val === '__ai') { val = KINDS[S.kind].apps[Math.floor(Math.random() * KINDS[S.kind].apps.length)]; toast(`AI가 '${APPS[val].label}'${josa(APPS[val].label, '을/를')} 골랐어요`); }
   if (q.key === 'kind' && S.kind !== val) S.app = null;
   S[q.key] = q.key === 'level' ? parseInt(val, 10) : val;
   step++; renderQuestion();
+  const top = $('#guide').getBoundingClientRect().top; // 긴 보기 아래쪽에서 골랐어도 다음 질문이 보이게
+  if (top < 64) window.scrollTo({ top: Math.max(0, window.scrollY + top - 76), behavior: 'smooth' });
 }
 $('#back').addEventListener('click', () => { if (step > 0) { step--; renderQuestion(); } });
 function submitName() {
@@ -80,7 +121,7 @@ function submitName() {
   const clean = sanitizeName(raw);
   if (isBanned(clean)) { toast('그 이름은 쓸 수 없어요. 다른 이름으로!'); $('#nameIn').value = ''; sfx.no(); return; }
   if (raw.trim() && !clean) toast('쓸 수 없는 글자라서 AI가 이름을 지어 줄게요');
-  S.name = clean; S.seed = newSeed(); startBuild(5200);
+  S.name = clean; S.seed = newSeed(); startBuild(7000);
 }
 $('#goBuild').addEventListener('click', submitName);
 $('#nameIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); submitName(); } });
@@ -107,7 +148,8 @@ function showResult() {
   $('#rtitle').textContent = d.name;
   $('#rbadge').textContent = fromLink ? '내 폰에서 열렸어요' : '완성';
   $('#rbadge').classList.toggle('phone', fromLink);
-  $('#rmeta').textContent = `${d.kind.label}의 ${d.app.label}, ${d.theme.label} 분위기, 주인공 ${d.char.label}(${d.voice.label}), ${d.level.label}, ${d.sound.label}, ${d.size.label}, ${d.fx.label}`;
+  const meta = $('#rmeta'); html(meta, '');
+  [d.app.label, `${d.theme.label} 분위기`, `주인공 ${d.char.label}`, `말투 ${d.voice.label}`, `속도 ${d.level.label}`, d.sound.label, `크기 ${d.size.label}`, d.fx.label].forEach(t => meta.appendChild(el('span', '', t)));
   const stage = $('#stage');
   if (destroyApp) destroyApp();
   setSound(S.sound);
@@ -119,6 +161,7 @@ function showResult() {
 }
 $('#aQr').addEventListener('click', () => showQr(S));
 $('#aPrompt').addEventListener('click', () => showPrompt(S));
+$('#aCode').addEventListener('click', () => showCode(S));
 $('#aHome').addEventListener('click', () => {
   if (destroyApp) { destroyApp(); destroyApp = null; }
   S = fresh();
@@ -149,7 +192,7 @@ function renderTweak() {
         if (String(S[key]) === String(val)) return;
         if (key === 'kind') { S.kind = val; S.app = KINDS[val].apps[0]; }
         else S[key] = key === 'level' ? Number(val) : val;
-        toast(`"${label}만 ${o.label}(으)로 바꿔 줘" → 다시 빚는 중`);
+        toast(`"${label}만 '${o.label}'${josa(o.label, '으로/로')} 바꿔 줘" → 다시 만드는 중`);
         fromLink = false; startBuild(2600);
       });
       chips.appendChild(c);
